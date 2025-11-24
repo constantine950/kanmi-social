@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { uploadToCloudinary } from "../utils/cloudinaryHelper.ts";
 import catchAsync from "../utils/catchAsync.ts";
 import AppError from "../utils/AppError.ts";
+import jwt from "jsonwebtoken";
 
 const registerUser = catchAsync(async (req, res, next) => {
   const { username, password } = req.body;
@@ -49,4 +50,36 @@ const registerUser = catchAsync(async (req, res, next) => {
   });
 });
 
-export { registerUser };
+const loginUser = catchAsync(async (req, res, next) => {
+  const { username, password } = req.body;
+
+  const user = await User.findOne({ username });
+  if (!user) {
+    return next(new AppError("No user with this username", 400));
+  }
+
+  const matchUserPassword = await bcrypt.compare(password, user.password!);
+  if (!matchUserPassword) {
+    return next(
+      new AppError("incorrect password, Please type correct password", 400)
+    );
+  }
+
+  const accessToken = jwt.sign(
+    {
+      user_id: user._id,
+      username: user.username,
+      profilePicture: user.profilePicture,
+    },
+    process.env.JWT_KEY!,
+    { expiresIn: "30m" }
+  );
+
+  res.status(200).json({
+    success: true,
+    message: "User logged in successfully",
+    data: accessToken,
+  });
+});
+
+export { registerUser, loginUser };
