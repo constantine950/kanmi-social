@@ -21,4 +21,5 @@ export interface UserInfoReq extends Request {
 export interface UserRes {
   success: boolean;
   message: string;
+  data: any;
 }

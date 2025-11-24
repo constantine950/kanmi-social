@@ -1,67 +1,52 @@
-import { type Request, type Response } from "express";
 import User from "../models/User.ts";
-import {
-  type UserInfoReq,
-  type CustomProperty,
-  type UserRes,
-} from "../types.ts";
+import { type CustomProperty } from "../types.ts";
 import bcrypt from "bcryptjs";
 import { uploadToCloudinary } from "../utils/cloudinaryHelper.ts";
+import catchAsync from "../utils/catchAsync.ts";
+import AppError from "../utils/AppError.ts";
 
-const registerUser = async (req: UserInfoReq, res: Response<UserRes>) => {
-  try {
-    const { username, password } = req.body;
-    if (!req.file) {
-      return res.status(400).json({
-        success: false,
-        message: "file required",
-      });
-    }
-    const existingUser: CustomProperty | null = await User.findOne({
-      username,
-    });
-    if (existingUser) {
-      return res.status(400).json({
-        success: false,
-        message: "You already registered",
-      });
-    }
+const registerUser = catchAsync(async (req, res, next) => {
+  const { username, password } = req.body;
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedpassword = await bcrypt.hash(password, salt);
-
-    const uploaded = await uploadToCloudinary(req.file.path);
-    if (!uploaded) throw new Error("Upload failed");
-    const { url, publicId } = uploaded;
-
-    const newlyCreatedUser: CustomProperty = new User({
-      username,
-      password: hashedpassword,
-      profilePicture: {
-        url,
-        publicId,
-      },
-    });
-    await newlyCreatedUser.save();
-
-    if (newlyCreatedUser) {
-      res.status(201).json({
-        success: true,
-        message: "User registered",
-      });
-    } else {
-      res.status(500).json({
-        success: false,
-        message: "Not able to register",
-      });
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      success: false,
-      message: "Register server error, try again",
-    });
+  if (!req.file) {
+    return next(new AppError("file required", 400));
   }
-};
+
+  const existingUser: CustomProperty | null = await User.findOne({
+    username,
+  });
+  if (existingUser) {
+    return next(new AppError("You already registered", 400));
+  }
+
+  const salt = await bcrypt.genSalt(10);
+  const hashedpassword = await bcrypt.hash(password, salt);
+
+  const uploaded = await uploadToCloudinary(req.file.path);
+  if (!uploaded) {
+    return next(new AppError("Upload failed. Try again", 500));
+  }
+  const { url, publicId } = uploaded;
+
+  const newlyCreatedUser: CustomProperty = new User({
+    username,
+    password: hashedpassword,
+    profilePicture: {
+      url,
+      publicId,
+    },
+  });
+  await newlyCreatedUser.save();
+
+  res.status(201).json({
+    success: true,
+    message: "User registered successfully",
+    data: {
+      id: newlyCreatedUser._id,
+      username: newlyCreatedUser.username,
+      profilePicture: newlyCreatedUser.profilePicture,
+    },
+  });
+});
 
 export { registerUser };
