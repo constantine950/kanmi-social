@@ -1,7 +1,9 @@
+import cloudinary from "../config/cloudinary.ts";
 import User from "../models/User.ts";
 import AppError from "../utils/AppError.ts";
 import catchAsync from "../utils/catchAsync.ts";
 import bcrypt from "bcryptjs";
+import { uploadToCloudinary } from "../utils/cloudinaryHelper.ts";
 
 const getSingleUser = catchAsync(async (req, res, next) => {
   const userId = req.userInfo?.user_id;
@@ -70,4 +72,51 @@ const updatePassword = catchAsync(async (req, res, next) => {
   });
 });
 
-export { getSingleUser, updateUsername, updatePassword };
+const updateProfilePicture = catchAsync(async (req, res, next) => {
+  const userId = req.userInfo?.user_id;
+
+  if (!req.file) {
+    return next(new AppError("file required", 400));
+  }
+
+  const prevProfilePicture = await User.findById(userId);
+
+  if (!prevProfilePicture) {
+    return next(new AppError("No user found", 404));
+  }
+
+  if (prevProfilePicture._id.toString() !== userId) {
+    return next(new AppError("not permitted to perform this operation", 403));
+  }
+
+  await cloudinary.uploader.destroy(
+    prevProfilePicture.profilePicture?.publicId!
+  );
+
+  const uploaded = await uploadToCloudinary(req.file.path);
+  if (!uploaded) {
+    return next(new AppError("Unable to upload to cloudinary", 500));
+  }
+  const { url, publicId } = uploaded;
+
+  const newlyProfilePicture = await User.findByIdAndUpdate(
+    userId,
+    {
+      profilePicture: {
+        url,
+        publicId,
+      },
+    },
+    { new: true, runValidators: true }
+  );
+
+  await newlyProfilePicture?.save();
+
+  res.status(200).json({
+    success: true,
+    message: "Profile picture updated",
+    data: newlyProfilePicture,
+  });
+});
+
+export { getSingleUser, updateUsername, updatePassword, updateProfilePicture };
