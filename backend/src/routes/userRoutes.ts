@@ -1,6 +1,7 @@
 import express from "express";
 import authMiddleware from "../middlewares/auth.ts";
 import {
+  deleteUser,
   getSingleUser,
   updatePassword,
   updateProfilePicture,
@@ -19,5 +20,6 @@ userRoutes.patch(
   upload.single("image"),
   updateProfilePicture
 );
+userRoutes.delete("/delete-user", authMiddleware, deleteUser);
 
 export default userRoutes;

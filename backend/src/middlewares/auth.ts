@@ -34,7 +34,7 @@ const authMiddleware = (
     };
     next();
   } catch (error) {
-    next(error);
+    next(new AppError("Please login again", 500));
   }
 };
 

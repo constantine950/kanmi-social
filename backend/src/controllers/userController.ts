@@ -76,47 +76,70 @@ const updateProfilePicture = catchAsync(async (req, res, next) => {
   const userId = req.userInfo?.user_id;
 
   if (!req.file) {
-    return next(new AppError("file required", 400));
+    return next(new AppError("File required", 400));
   }
 
-  const prevProfilePicture = await User.findById(userId);
-
-  if (!prevProfilePicture) {
-    return next(new AppError("No user found", 404));
+  // Fetch user
+  const user = await User.findById(userId);
+  if (!user) {
+    return next(new AppError("User not found", 404));
   }
 
-  if (prevProfilePicture._id.toString() !== userId) {
-    return next(new AppError("not permitted to perform this operation", 403));
+  // Delete old image if it exists
+  if (user.profilePicture?.publicId) {
+    await cloudinary.uploader.destroy(user.profilePicture.publicId);
   }
 
-  await cloudinary.uploader.destroy(
-    prevProfilePicture.profilePicture?.publicId!
-  );
-
+  // Upload new image
   const uploaded = await uploadToCloudinary(req.file.path);
   if (!uploaded) {
-    return next(new AppError("Unable to upload to cloudinary", 500));
+    return next(new AppError("Unable to upload to Cloudinary", 500));
   }
+
   const { url, publicId } = uploaded;
 
-  const newlyProfilePicture = await User.findByIdAndUpdate(
+  // Update DB
+  const updatedUser = await User.findByIdAndUpdate(
     userId,
     {
-      profilePicture: {
-        url,
-        publicId,
-      },
+      profilePicture: { url, publicId },
     },
     { new: true, runValidators: true }
   );
 
-  await newlyProfilePicture?.save();
-
   res.status(200).json({
     success: true,
     message: "Profile picture updated",
-    data: newlyProfilePicture,
+    data: updatedUser,
   });
 });
 
-export { getSingleUser, updateUsername, updatePassword, updateProfilePicture };
+const deleteUser = catchAsync(async (req, res, next) => {
+  const userId = req.userInfo?.user_id;
+
+  // Fetch user
+  const user = await User.findById(userId);
+  if (!user) {
+    return next(new AppError("User not found", 404));
+  }
+
+  // Delete old image if it exists
+  if (user.profilePicture?.publicId) {
+    await cloudinary.uploader.destroy(user.profilePicture.publicId);
+  }
+
+  await User.findByIdAndDelete(userId);
+
+  res.status(200).json({
+    success: true,
+    message: "User deleted",
+  });
+});
+
+export {
+  getSingleUser,
+  updateUsername,
+  updatePassword,
+  updateProfilePicture,
+  deleteUser,
+};
