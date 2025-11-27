@@ -17,7 +17,7 @@ userRoutes.patch("/update-password", authMiddleware, updatePassword);
 userRoutes.patch(
   "/update-profile-picture",
   authMiddleware,
-  upload.single("image"),
+  upload.single("profilePicture"),
   updateProfilePicture
 );
 userRoutes.delete("/delete-user", authMiddleware, deleteUser);

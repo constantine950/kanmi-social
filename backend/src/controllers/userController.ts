@@ -3,7 +3,7 @@ import User from "../models/User.ts";
 import AppError from "../utils/AppError.ts";
 import catchAsync from "../utils/catchAsync.ts";
 import bcrypt from "bcryptjs";
-import { uploadToCloudinary } from "../utils/cloudinaryHelper.ts";
+import { uploadBufferToCloudinary } from "../utils/cloudinaryHelper.ts";
 
 const getSingleUser = catchAsync(async (req, res, next) => {
   const userId = req.userInfo?.user_id;
@@ -91,18 +91,19 @@ const updateProfilePicture = catchAsync(async (req, res, next) => {
   }
 
   // Upload new image
-  const uploaded = await uploadToCloudinary(req.file.path);
+  const uploaded = await uploadBufferToCloudinary(req.file.buffer);
   if (!uploaded) {
     return next(new AppError("Unable to upload to Cloudinary", 500));
   }
-
-  const { url, publicId } = uploaded;
 
   // Update DB
   const updatedUser = await User.findByIdAndUpdate(
     userId,
     {
-      profilePicture: { url, publicId },
+      profilePicture: {
+        url: uploaded.secure_url,
+        publicId: uploaded.public_id,
+      },
     },
     { new: true, runValidators: true }
   );
@@ -110,7 +111,7 @@ const updateProfilePicture = catchAsync(async (req, res, next) => {
   res.status(200).json({
     success: true,
     message: "Profile picture updated",
-    data: updatedUser,
+    data: updatedUser?.profilePicture,
   });
 });
 

@@ -1,14 +1,19 @@
 import cloudinary from "../config/cloudinary.ts";
+import { Readable } from "stream";
 
-const uploadToCloudinary = async (filePath: string) => {
-  try {
-    const result = await cloudinary.uploader.upload(filePath);
+export const uploadBufferToCloudinary = (buffer: Buffer): Promise<any> => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      { folder: "profile_pictures" },
+      (error, result) => {
+        if (error) return reject(error);
+        resolve(result);
+      }
+    );
 
-    return { url: result.secure_url, publicId: result.public_id };
-  } catch (error) {
-    console.error(error);
-    return null;
-  }
+    const readable = new Readable();
+    readable.push(buffer);
+    readable.push(null);
+    readable.pipe(stream);
+  });
 };
-
-export { uploadToCloudinary };
