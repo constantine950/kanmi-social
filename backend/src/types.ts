@@ -1,11 +1,20 @@
 import { type Request } from "express";
 import { type JwtPayload } from "jsonwebtoken";
-import { Document } from "mongoose";
+import { Document, Types } from "mongoose";
 
 export interface CustomProperty extends Document {
   username?: string;
   password?: string;
   profilePicture?: {
+    url: string;
+    publicId: string;
+  };
+}
+
+export interface CustomPostProperty extends Document {
+  uploadedBy: Types.ObjectId;
+  text: string;
+  image: {
     url: string;
     publicId: string;
   };
