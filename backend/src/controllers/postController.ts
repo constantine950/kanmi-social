@@ -51,4 +51,18 @@ const getAllPosts = catchAsync(async (req, res, next) => {
   });
 });
 
-export { createPost, getAllPosts };
+const getPostsByUser = catchAsync(async (req, res, next) => {
+  const userId = req.userInfo?.user_id;
+
+  const userPosts = await Post.find({ uploadedBy: userId })
+    .populate("uploadedBy", "_id username profilePicture")
+    .sort({ createdAt: -1 });
+
+  res.status(200).json({
+    success: true,
+    message: "User posts fetched",
+    data: userPosts,
+  });
+});
+
+export { createPost, getAllPosts, getPostsByUser };

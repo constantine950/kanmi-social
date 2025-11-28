@@ -13,5 +13,6 @@ postRoutes.post(
 );
 
 postRoutes.get("/get-posts", authMiddleware, getAllPosts);
+postRoutes.get("/get-user-posts", authMiddleware, getAllPosts);
 
 export default postRoutes;
