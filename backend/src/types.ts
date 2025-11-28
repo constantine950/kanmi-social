@@ -25,6 +25,7 @@ export interface UserInfoReq extends Request {
     username: string;
     password: string;
     newPassword: string;
+    text: string;
   };
   userInfo?: CustomJwtPayload;
   file?: Express.Multer.File;
