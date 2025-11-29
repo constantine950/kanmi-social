@@ -1,7 +1,13 @@
 import express from "express";
 import authMiddleware from "../middlewares/auth.ts";
 import upload from "../middlewares/upload.ts";
-import { createPost, getAllPosts } from "../controllers/postController.ts";
+import {
+  createPost,
+  deletePost,
+  getAllPosts,
+  getPostsByUser,
+  updatePost,
+} from "../controllers/postController.ts";
 
 const postRoutes = express.Router();
 
@@ -11,8 +17,14 @@ postRoutes.post(
   upload.single("postPicture"),
   createPost
 );
-
 postRoutes.get("/get-posts", authMiddleware, getAllPosts);
-postRoutes.get("/get-user-posts", authMiddleware, getAllPosts);
+postRoutes.get("/get-user-posts", authMiddleware, getPostsByUser);
+postRoutes.delete("/delete-post/:id", authMiddleware, deletePost);
+postRoutes.patch(
+  "/update-post/:id",
+  authMiddleware,
+  upload.single("postPicture"),
+  updatePost
+);
 
 export default postRoutes;

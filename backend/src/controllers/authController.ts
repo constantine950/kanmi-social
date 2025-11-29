@@ -74,7 +74,7 @@ const loginUser = catchAsync(async (req, res, next) => {
       profilePicture: user.profilePicture,
     },
     process.env.JWT_KEY!,
-    { expiresIn: "30m" }
+    { expiresIn: "1hr" }
   );
 
   res.status(200).json({
