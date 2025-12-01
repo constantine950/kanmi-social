@@ -18,6 +18,7 @@ export interface CustomPostProperty extends Document {
     url: string;
     publicId: string;
   };
+  likes: string[];
 }
 
 export interface UserInfoReq extends Request {

@@ -16,6 +16,12 @@ const PostSchema = new mongoose.Schema<CustomPostProperty>(
       url: { type: String, default: null },
       publicId: { type: String, default: null },
     },
+    likes: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
   },
   { timestamps: true }
 );

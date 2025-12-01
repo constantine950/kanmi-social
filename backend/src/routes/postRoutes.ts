@@ -6,6 +6,7 @@ import {
   deletePost,
   getAllPosts,
   getPostsByUser,
+  togglePostLike,
   updatePost,
 } from "../controllers/postController.ts";
 
@@ -26,5 +27,5 @@ postRoutes.patch(
   upload.single("postPicture"),
   updatePost
 );
-
+postRoutes.patch("/:id/like", authMiddleware, togglePostLike);
 export default postRoutes;

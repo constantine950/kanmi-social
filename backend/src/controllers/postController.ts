@@ -41,9 +41,15 @@ const createPost = catchAsync(async (req, res, next) => {
 });
 
 const getAllPosts = catchAsync(async (req, res, next) => {
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 5;
+  const skip = (page - 1) * limit;
+
   const posts = await Post.find()
-    .populate("uploadedBy", "_id username profilePicture")
-    .sort({ createdAt: -1 });
+    .populate("uploadedBy", "username profilePicture")
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit);
 
   res.status(200).json({
     success: true,
@@ -150,4 +156,35 @@ const updatePost = catchAsync(async (req, res, next) => {
   });
 });
 
-export { createPost, getAllPosts, getPostsByUser, deletePost, updatePost };
+const togglePostLike = catchAsync(async (req, res, next) => {
+  const postId = req.params.id;
+  const userId = req.userInfo?.user_id;
+
+  const post = await Post.findById(postId);
+  if (!post) return next(new AppError("post not found", 404));
+
+  const alreadyLiked = post.likes.includes(userId!);
+
+  if (alreadyLiked) {
+    post.likes = post.likes.filter((id) => id.toString() !== userId);
+  } else {
+    post.likes.push(userId!);
+  }
+
+  await post.save();
+
+  res.status(200).json({
+    success: true,
+    message: `Liked ${!alreadyLiked}`,
+    data: post.likes.length,
+  });
+});
+
+export {
+  createPost,
+  getAllPosts,
+  getPostsByUser,
+  deletePost,
+  updatePost,
+  togglePostLike,
+};
