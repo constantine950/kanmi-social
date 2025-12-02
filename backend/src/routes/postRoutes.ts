@@ -6,6 +6,8 @@ import {
   deletePost,
   getAllPosts,
   getPostsByUser,
+  getTotalLikes,
+  getTrendingPosts,
   togglePostLike,
   updatePost,
 } from "../controllers/postController.ts";
@@ -28,4 +30,6 @@ postRoutes.patch(
   updatePost
 );
 postRoutes.patch("/:id/like", authMiddleware, togglePostLike);
+postRoutes.get("/:id/likes/count", authMiddleware, getTotalLikes);
+postRoutes.get("/trending", getTrendingPosts);
 export default postRoutes;

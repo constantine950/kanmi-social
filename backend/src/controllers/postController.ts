@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import cloudinary from "../config/cloudinary.ts";
 import Post from "../models/Post.ts";
 import AppError from "../utils/AppError.ts";
@@ -180,6 +181,54 @@ const togglePostLike = catchAsync(async (req, res, next) => {
   });
 });
 
+const getTotalLikes = catchAsync(async (req, res, next) => {
+  const postId = req.params.id;
+
+  const result = await Post.aggregate([
+    { $match: { _id: new mongoose.Types.ObjectId(postId) } },
+    { $project: { totalLikes: { $size: "$likes" } } },
+  ]);
+
+  res.status(200).json({
+    success: true,
+    data: result,
+  });
+});
+
+const getTrendingPosts = catchAsync(async (req, res, next) => {
+  const trending = await Post.aggregate([
+    {
+      $lookup: {
+        from: "comments",
+        localField: "_id",
+        foreignField: "postId",
+        as: "comments",
+      },
+    },
+    {
+      $project: {
+        text: 1,
+        image: 1,
+        likesCount: { $size: "$likes" },
+        commentsCount: { $size: "$comments" },
+        score: {
+          $add: [
+            { $size: "$likes" },
+            { $multiply: [{ $size: "$comments" }, 2] },
+          ],
+        },
+      },
+    },
+    { $sort: { score: -1 } },
+    { $limit: 5 },
+  ]);
+
+  res.status(200).json({
+    success: true,
+    data: trending,
+  });
+});
+
 export {
   createPost,
   getAllPosts,
@@ -187,4 +236,6 @@ export {
   deletePost,
   updatePost,
   togglePostLike,
+  getTotalLikes,
+  getTrendingPosts,
 };
