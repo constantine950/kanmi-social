@@ -21,6 +21,15 @@ export interface CustomPostProperty extends Document {
   likes: string[];
 }
 
+export interface CustomNotificationProperty extends Document {
+  recipient: Types.ObjectId;
+  sender: Types.ObjectId;
+  type: string;
+  postId: Types.ObjectId;
+  message: string;
+  read: boolean;
+}
+
 export interface UserInfoReq extends Request {
   body: {
     username: string;
