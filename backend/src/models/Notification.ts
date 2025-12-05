@@ -22,7 +22,7 @@ const NotificationSchema = new mongoose.Schema<CustomNotificationProperty>(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Post",
     },
-    message: String,
+    messagee: String,
     read: { type: Boolean, default: false },
   },
   { timestamps: true }

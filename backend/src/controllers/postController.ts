@@ -4,6 +4,8 @@ import Post from "../models/Post.ts";
 import AppError from "../utils/AppError.ts";
 import catchAsync from "../utils/catchAsync.ts";
 import { uploadBufferToCloudinary } from "../utils/cloudinaryHelper.ts";
+import Notification from "../models/Notification.ts";
+import { io, onlineUsers } from "../utils/socket.ts";
 
 const createPost = catchAsync(async (req, res, next) => {
   const { text } = req.body;
@@ -170,6 +172,26 @@ const togglePostLike = catchAsync(async (req, res, next) => {
     post.likes = post.likes.filter((id) => id.toString() !== userId);
   } else {
     post.likes.push(userId!);
+
+    // Send notification to post owner if not self
+    if (post.uploadedBy.toString() !== userId) {
+      const notification = await Notification.create({
+        recipient: post.uploadedBy,
+        sender: userId,
+        type: "like",
+        postId: post._id,
+        message: "liked your post",
+      });
+
+      const recipientSocketId = onlineUsers.get(post.uploadedBy.toString());
+      if (recipientSocketId) {
+        io.to(recipientSocketId).emit("notification:new", {
+          message: notification.message,
+          from: userId,
+          postId: post._id,
+        });
+      }
+    }
   }
 
   await post.save();
