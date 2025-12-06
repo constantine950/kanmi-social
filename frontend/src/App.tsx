@@ -1,35 +1,65 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from "react";
+import { loginUser } from "./api/authApi";
+import { jwtDecode } from "jwt-decode";
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function Login() {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [message, setMessage] = useState("");
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+
+    const data = await loginUser(username, password);
+
+    if (data.success) {
+      localStorage.setItem("token", data.data); // save token
+      const userInfo = jwtDecode(data.data);
+      setMessage(`Welcome ${userInfo.username} ${userInfo.profilePicture.url}`);
+    } else {
+      setMessage(data.message);
+    }
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <div style={{ width: "300px", margin: "50px auto" }}>
+      <h2>Login</h2>
 
-export default App
+      <form onSubmit={handleLogin}>
+        <input
+          type="text"
+          placeholder="Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          required
+          style={{ width: "100%", marginBottom: "10px", padding: "8px" }}
+        />
+
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          style={{ width: "100%", marginBottom: "10px", padding: "8px" }}
+        />
+
+        <button
+          type="submit"
+          style={{
+            width: "100%",
+            padding: "8px",
+            background: "black",
+            color: "white",
+            borderRadius: "6px",
+            cursor: "pointer",
+          }}
+        >
+          Login
+        </button>
+      </form>
+
+      {message && <p style={{ marginTop: "15px" }}>{message}</p>}
+    </div>
+  );
+}

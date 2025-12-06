@@ -3,12 +3,14 @@ import Notification from "../models/Notification.ts";
 import Post from "../models/Post.ts";
 import AppError from "../utils/AppError.ts";
 import catchAsync from "../utils/catchAsync.ts";
-import { io, onlineUsers } from "../utils/socket.ts";
+import { getIO, onlineUsers } from "../socket.ts";
 
 const createComment = catchAsync(async (req, res, next) => {
   const { text } = req.body;
   const postId = req.params.id;
   const userId = req.userInfo?.user_id;
+
+  const io = getIO();
 
   // Create comment
   const comment = await Comment.create({ postId, userId, text });

@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { type CustomNotificationProperty } from "../types";
+import { type CustomNotificationProperty } from "../types.ts";
 
 const NotificationSchema = new mongoose.Schema<CustomNotificationProperty>(
   {
@@ -22,7 +22,7 @@ const NotificationSchema = new mongoose.Schema<CustomNotificationProperty>(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Post",
     },
-    messagee: String,
+    message: String,
     read: { type: Boolean, default: false },
   },
   { timestamps: true }
