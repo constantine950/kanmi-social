@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { createComment } from "./api/authApi";
 import { loginUser } from "./api/authApi";
 import { jwtDecode } from "jwt-decode";
 
@@ -10,15 +11,18 @@ export default function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
 
-    const data = await loginUser(username, password);
+    const data = await createComment();
+    console.log(data);
 
-    if (data.success) {
-      localStorage.setItem("token", data.data); // save token
-      const userInfo = jwtDecode(data.data);
-      setMessage(`Welcome ${userInfo.username} ${userInfo.profilePicture.url}`);
-    } else {
-      setMessage(data.message);
-    }
+    // const data = await loginUser(username, password);
+
+    // if (data.success) {
+    //   localStorage.setItem("token", data.data); // save token
+    //   const userInfo = jwtDecode(data.data);
+    //   setMessage(`Welcome ${userInfo.username} ${userInfo.profilePicture.url}`);
+    // } else {
+    //   setMessage(data.message);
+    // }
   };
 
   return (
@@ -40,7 +44,6 @@ export default function Login() {
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          required
           style={{ width: "100%", marginBottom: "10px", padding: "8px" }}
         />
 
@@ -59,7 +62,7 @@ export default function Login() {
         </button>
       </form>
 
-      {message && <p style={{ marginTop: "15px" }}>{message}</p>}
+      {/* {message && <p style={{ marginTop: "15px" }}>{message}</p>} */}
     </div>
   );
 }

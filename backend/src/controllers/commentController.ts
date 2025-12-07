@@ -4,6 +4,7 @@ import Post from "../models/Post.ts";
 import AppError from "../utils/AppError.ts";
 import catchAsync from "../utils/catchAsync.ts";
 import { getIO, onlineUsers } from "../socket.ts";
+import User from "../models/User.ts";
 
 const createComment = catchAsync(async (req, res, next) => {
   const { text } = req.body;
@@ -33,9 +34,10 @@ const createComment = catchAsync(async (req, res, next) => {
 
     const recipientSocketId = onlineUsers.get(postOwnerId);
     if (recipientSocketId) {
+      const senderName = await User.findById(userId);
       io.to(recipientSocketId).emit("notification:new", {
         message: notification.message,
-        from: userId,
+        from: senderName?.username,
         postId,
       });
     }

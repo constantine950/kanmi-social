@@ -32,4 +32,5 @@ postRoutes.patch(
 postRoutes.patch("/:id/like", authMiddleware, togglePostLike);
 postRoutes.get("/:id/likes/count", authMiddleware, getTotalLikes);
 postRoutes.get("/trending", getTrendingPosts);
+
 export default postRoutes;
