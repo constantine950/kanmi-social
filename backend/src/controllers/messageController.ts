@@ -30,11 +30,9 @@ const sendMessage = catchAsync(async (req, res, next) => {
     image: imageData,
   });
 
-  // Check if receiver is online
   const receiverSocketId = onlineUsers.get(receiver.toString());
 
   if (receiverSocketId) {
-    // Send message instantly
     io.to(receiverSocketId).emit("message:receive", {
       _id: message._id,
       sender,

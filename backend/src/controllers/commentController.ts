@@ -13,10 +13,8 @@ const createComment = catchAsync(async (req, res, next) => {
 
   const io = getIO();
 
-  // Create comment
   const comment = await Comment.create({ postId, userId, text });
 
-  // Get post to find the owner
   const post = await Post.findById(postId);
   if (!post) return next(new AppError("Post not found", 404));
 

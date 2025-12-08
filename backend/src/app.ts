@@ -10,12 +10,12 @@ import commentRoutes from "./routes/commentRoutes.ts";
 import notificationRoutes from "./routes/notificationRoutes.ts";
 import { initSocket } from "./socket.ts";
 import messageRoutes from "./routes/messageRoutes.ts";
+import { rateLimiter } from "./middlewares/rateLimiter.ts";
 
 connectDB();
 
 const app = express();
 
-//enable CORS for frontend
 app.use(
   cors({
     origin: "http://localhost:5173",
@@ -24,14 +24,12 @@ app.use(
 );
 
 app.use(express.json());
+app.use(rateLimiter);
 
-// Create HTTP server for socket.io
 const server = http.createServer(app);
 
-// Initialize socket here AFTER server is created
 initSocket(server);
 
-// ROUTES
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/posts", postRoutes);
@@ -39,7 +37,6 @@ app.use("/api/comments", commentRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/message", messageRoutes);
 
-// ERROR HANDLER
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;

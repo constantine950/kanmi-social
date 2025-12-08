@@ -85,18 +85,15 @@ const updateProfilePicture = catchAsync(async (req, res, next) => {
     return next(new AppError("User not found", 404));
   }
 
-  // Delete old image if it exists
   if (user.profilePicture?.publicId) {
     await cloudinary.uploader.destroy(user.profilePicture.publicId);
   }
 
-  // Upload new image
   const uploaded = await uploadBufferToCloudinary(req.file.buffer);
   if (!uploaded) {
     return next(new AppError("Unable to upload to Cloudinary", 500));
   }
 
-  // Update DB
   const updatedUser = await User.findByIdAndUpdate(
     userId,
     {
@@ -118,13 +115,11 @@ const updateProfilePicture = catchAsync(async (req, res, next) => {
 const deleteUser = catchAsync(async (req, res, next) => {
   const userId = req.userInfo?.user_id;
 
-  // Fetch user
   const user = await User.findById(userId);
   if (!user) {
     return next(new AppError("User not found", 404));
   }
 
-  // Delete old image if it exists
   if (user.profilePicture?.publicId) {
     await cloudinary.uploader.destroy(user.profilePicture.publicId);
   }
