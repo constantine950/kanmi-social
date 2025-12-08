@@ -30,12 +30,24 @@ export interface CustomNotificationProperty extends Document {
   read: boolean;
 }
 
+export interface CustomMessageProperty {
+  sender: Types.ObjectId;
+  receiver: Types.ObjectId;
+  text: string;
+  image: {
+    url: String;
+    publicId: String;
+  };
+  createdAt: Date;
+}
+
 export interface UserInfoReq extends Request {
   body: {
     username: string;
     password: string;
     newPassword: string;
     text: string;
+    receiver: Types.ObjectId;
   };
   userInfo?: CustomJwtPayload;
   file?: Express.Multer.File;

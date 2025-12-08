@@ -9,12 +9,13 @@ import postRoutes from "./routes/postRoutes.ts";
 import commentRoutes from "./routes/commentRoutes.ts";
 import notificationRoutes from "./routes/notificationRoutes.ts";
 import { initSocket } from "./socket.ts";
+import messageRoutes from "./routes/messageRoutes.ts";
 
 connectDB();
 
 const app = express();
 
-// FIX: enable CORS for frontend
+//enable CORS for frontend
 app.use(
   cors({
     origin: "http://localhost:5173",
@@ -36,11 +37,11 @@ app.use("/api/users", userRoutes);
 app.use("/api/posts", postRoutes);
 app.use("/api/comments", commentRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/message", messageRoutes);
 
 // ERROR HANDLER
 app.use(errorHandler);
 
-// IMPORTANT: use server.listen — not app.listen
 const PORT = process.env.PORT || 5000;
 
 server.listen(PORT, () => {

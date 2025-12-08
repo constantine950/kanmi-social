@@ -1,7 +1,7 @@
 import { Server } from "socket.io";
 
 let io: Server;
-export const onlineUsers = new Map(); // 👈 available everywhere
+export const onlineUsers = new Map();
 
 export const initSocket = (server: any) => {
   io = new Server(server, {
