@@ -9,31 +9,27 @@ import Messages from "./pages/Messages";
 import Notifications from "./pages/Notifications";
 import Explore from "./pages/Explore";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
-import Navbar from "./components/layout/Navbar";
+import AppLayout from "./components/AppLayout";
 
 function App() {
   return (
     <Router>
       <Routes>
-        {/* Public Routes */}
+        {/* Public pages */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
-        {/* Protected Routes */}
-        <Route
-          element={
-            <ProtectedRoute>
-              <Navbar />
-            </ProtectedRoute>
-          }
-        >
-          <Route path="/home" element={<Home />} />
-          <Route path="/explore" element={<Explore />} />
-          <Route path="/post/:id" element={<Post />} />
-          <Route path="/messages" element={<Messages />} />
-          <Route path="/notifications" element={<Notifications />} />
-          <Route path="/profile/:username" element={<Profile />} />
+        {/* Protected pages */}
+        <Route element={<ProtectedRoute />}>
+          <Route element={<AppLayout />}>
+            <Route path="/home" element={<Home />} />
+            <Route path="/explore" element={<Explore />} />
+            <Route path="/post/:id" element={<Post />} />
+            <Route path="/messages" element={<Messages />} />
+            <Route path="/notifications" element={<Notifications />} />
+            <Route path="/profile/:username" element={<Profile />} />
+          </Route>
         </Route>
       </Routes>
     </Router>
