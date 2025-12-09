@@ -1,98 +1,43 @@
-import { useState } from "react";
-import { createComment } from "./api/authApi";
-import { loginUser } from "./api/authApi";
-import { jwtDecode } from "jwt-decode";
+import { BrowserRouter as Router, Routes, Route } from "react-router";
+import LandingPage from "./pages/LandingPage";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Home from "./pages/Home";
+import Profile from "./pages/Profile";
+import Post from "./pages/Post";
+import Messages from "./pages/Messages";
+import Notifications from "./pages/Notifications";
+import Explore from "./pages/Explore";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
+import Navbar from "./components/layout/Navbar";
 
-export default function Login() {
-  const [username, setUsername] = useState("");
-  const [text, setText] = useState("");
-  const [password, setPassword] = useState("");
-  const [file, setFile] = useState<File | null>(null);
-  const [message, setMessage] = useState("");
-
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    const token = localStorage.getItem("token");
-
-    const fd = new FormData();
-
-    fd.append("text", text);
-    fd.append("receiver", "6928870c1f4bbb25d14cd8a8");
-    if (file) {
-      fd.append("image", file);
-    }
-
-    const res = await fetch("http://localhost:3000/api/message/send", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      body: fd,
-    });
-
-    const data = await res.json();
-    console.log(data);
-
-    // const data = await createComment();
-    // console.log(data);
-
-    // const data = await loginUser(username, password);
-
-    // if (data.success) {
-    //   localStorage.setItem("token", data.data); // save token
-    //   const userInfo = jwtDecode(data.data);
-    //   setMessage(`Welcome ${userInfo.username} ${userInfo.profilePicture.url}`);
-    // } else {
-    //   setMessage(data.message);
-    // }
-  };
-
+function App() {
   return (
-    <div style={{ width: "300px", margin: "50px auto" }}>
-      <h2>Login</h2>
+    <Router>
+      <Routes>
+        {/* Public Routes */}
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
 
-      <form onSubmit={handleLogin}>
-        <input
-          type="text"
-          placeholder="Username"
-          // value={username}
-          value={text}
-          // onChange={(e) => setUsername(e.target.value)}
-          onChange={(e) => setText(e.target.value)}
-          required
-          style={{ width: "100%", marginBottom: "10px", padding: "8px" }}
-        />
-
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          style={{ width: "100%", marginBottom: "10px", padding: "8px" }}
-        />
-
-        <input
-          type="file"
-          onChange={(e) => setFile(e.target.files?.[0] || null)}
-          style={{ width: "100%", marginBottom: "10px", padding: "8px" }}
-        />
-
-        <button
-          type="submit"
-          style={{
-            width: "100%",
-            padding: "8px",
-            background: "black",
-            color: "white",
-            borderRadius: "6px",
-            cursor: "pointer",
-          }}
+        {/* Protected Routes */}
+        <Route
+          element={
+            <ProtectedRoute>
+              <Navbar />
+            </ProtectedRoute>
+          }
         >
-          Login
-        </button>
-      </form>
-
-      {/* {message && <p style={{ marginTop: "15px" }}>{message}</p>} */}
-    </div>
+          <Route path="/home" element={<Home />} />
+          <Route path="/explore" element={<Explore />} />
+          <Route path="/post/:id" element={<Post />} />
+          <Route path="/messages" element={<Messages />} />
+          <Route path="/notifications" element={<Notifications />} />
+          <Route path="/profile/:username" element={<Profile />} />
+        </Route>
+      </Routes>
+    </Router>
   );
 }
+
+export default App;
