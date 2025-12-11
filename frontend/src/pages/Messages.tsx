@@ -1,4 +1,5 @@
-import { useState, type ChangeEvent } from "react";
+import { ArrowLeft } from "lucide-react";
+import { useState, useEffect, useRef, type ChangeEvent } from "react";
 
 interface Message {
   text?: string;
@@ -52,14 +53,36 @@ export default function Messages() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== "undefined"
+      ? window.matchMedia("(max-width: 767.98px)").matches
+      : false
+  );
+
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+  // Auto scroll to bottom
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [selectedUser?.messages]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia("(max-width: 767.98px)");
+    const onChange = () => setIsMobile(mq.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
+
   const handleSendMessage = () => {
     if (!newMessage.trim() && !imageFile) return;
     if (!selectedUser) return;
 
-    let imageUrl: string | undefined;
-    if (imageFile) {
-      imageUrl = imagePreview!;
-    }
+    const imageUrl: string | undefined = imagePreview || undefined;
 
     selectedUser.messages.push({
       text: newMessage || undefined,
@@ -74,7 +97,8 @@ export default function Messages() {
     setNewMessage("");
     setImageFile(null);
     setImagePreview(null);
-    setSelectedUser({ ...selectedUser }); // force re-render
+
+    setSelectedUser({ ...selectedUser });
   };
 
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -90,10 +114,15 @@ export default function Messages() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-stone-200 font-[Inter] px-6 md:px-14 pt-8 flex flex-col md:flex-row gap-4">
-      {/* USERS LIST */}
-      {(!selectedUser || window.innerWidth >= 768) && (
-        <div className="w-full md:w-80 border border-stone-800 bg-stone-950 rounded-md overflow-y-auto max-h-[80vh]">
+    <div className="w-full h-screen bg-black text-stone-200 font-[Inter] overflow-hidden">
+      <div className="h-full flex gap-4 w-full md:max-w-[960px] mx-auto">
+        {/* USERS LIST */}
+        <div
+          className={`
+            w-full md:w-80 h-full border border-stone-800 bg-stone-950 overflow-y-auto
+            ${isMobile && selectedUser ? "hidden" : "block"}
+          `}
+        >
           {users.map((user) => (
             <div
               key={user.id}
@@ -105,131 +134,146 @@ export default function Messages() {
               <img
                 src={user.profilePic}
                 alt={user.username}
-                className="w-10 h-10 rounded-full border border-stone-700 object-cover"
+                className="w-10 h-10 border border-stone-700 object-cover rounded-full"
               />
-              <div className="flex-1 flex flex-col">
+              <div className="flex-1">
                 <span className="text-sm font-medium text-white">
                   {user.username}
                 </span>
-                <span className="text-xs text-stone-400 truncate">
+                <span className="text-xs text-stone-400 block truncate">
                   {user.lastMessage}
                 </span>
               </div>
               {user.unread > 0 && (
-                <span className="text-xs bg-red-600 text-white px-2 py-0.5 rounded-full">
+                <span className="text-xs bg-red-600 text-white px-2 py-0.5 border border-stone-700">
                   {user.unread}
                 </span>
               )}
             </div>
           ))}
         </div>
-      )}
 
-      {/* CHAT WINDOW */}
-      {selectedUser && (
-        <div className="flex-1 border border-stone-800 bg-black rounded-md flex flex-col max-h-[80vh]">
-          {/* MOBILE BACK BUTTON */}
-          <div className="md:hidden flex items-center p-4 border-b border-stone-800">
-            <button
-              onClick={() => setSelectedUser(null)}
-              className="text-stone-400 px-2 py-1 bg-stone-900 rounded-md"
-            >
-              ← Back
-            </button>
-            <span className="ml-4 font-medium text-white">
-              {selectedUser.username}
-            </span>
-          </div>
-
-          {/* CHAT HEADER (desktop only) */}
-          <div className="hidden md:flex items-center gap-3 p-4 border-b border-stone-800">
-            <img
-              src={selectedUser.profilePic}
-              alt={selectedUser.username}
-              className="w-10 h-10 rounded-full border border-stone-700 object-cover"
-            />
-            <div className="flex flex-col">
-              <span className="text-sm font-medium text-white">
-                {selectedUser.username}
-              </span>
-              <span className="text-xs text-stone-400">Active now</span>
+        {/* CHAT WINDOW */}
+        <div
+          className={`
+            grow md:grow-0 md:basis-[560px] h-full flex flex-col
+            border border-stone-800 bg-black overflow-hidden
+            ${isMobile && !selectedUser ? "hidden" : "flex"}
+          `}
+        >
+          {!selectedUser ? (
+            <div className="flex-1 flex items-center justify-center text-stone-500">
+              Select a conversation
             </div>
-          </div>
-
-          {/* MESSAGES */}
-          <div className="flex-1 p-4 overflow-y-auto space-y-3">
-            {selectedUser.messages.map((msg, idx) => (
-              <div
-                key={idx}
-                className={`flex ${
-                  msg.sender === "you" ? "justify-end" : "justify-start"
-                }`}
-              >
-                <div
-                  className={`max-w-[70%] px-3 py-2 rounded-md text-sm ${
-                    msg.sender === "you"
-                      ? "bg-white text-black"
-                      : "bg-stone-900 text-stone-200"
-                  }`}
-                >
-                  {msg.image && (
-                    <img
-                      src={msg.image}
-                      alt="sent"
-                      className="w-full max-h-64 object-cover mb-1 rounded-md"
-                    />
-                  )}
-                  {msg.text && <div>{msg.text}</div>}
-                  <div className="text-xs text-stone-400 mt-1 text-right">
-                    {msg.time}
-                  </div>
+          ) : (
+            <>
+              {/* HEADER */}
+              <div className="flex items-center gap-3 p-3 border-b border-stone-800 shrink-0">
+                {isMobile && (
+                  <button
+                    onClick={() => setSelectedUser(null)}
+                    className="text-stone-300 p-2 border border-stone-700 bg-stone-900 hover:bg-stone-800"
+                  >
+                    <ArrowLeft className="w-5 h-5" />
+                  </button>
+                )}
+                <img
+                  src={selectedUser.profilePic}
+                  alt={selectedUser.username}
+                  className="w-10 h-10 border border-stone-700 object-cover rounded-full"
+                />
+                <div>
+                  <span className="text-sm font-medium text-white">
+                    {selectedUser.username}
+                  </span>
+                  <div className="text-xs text-stone-400">Active now</div>
                 </div>
               </div>
-            ))}
-          </div>
 
-          {/* SEND MESSAGE */}
-          <div className="p-4 border-t border-stone-800 flex flex-col md:flex-row gap-2">
-            <input
-              type="text"
-              placeholder="Type a message..."
-              className="flex-1 px-3 py-2 bg-stone-900 border border-stone-800 text-sm text-stone-200 focus:outline-none rounded-md"
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
-            />
-            <div className="flex items-center gap-2">
-              {imagePreview && (
-                <div className="relative">
-                  <img
-                    src={imagePreview}
-                    alt="preview"
-                    className="w-20 h-20 object-cover rounded-md border border-stone-700"
-                  />
-                  <button
-                    onClick={removeImage}
-                    className="absolute top-0 right-0 bg-red-600 text-white w-5 h-5 rounded-full text-xs flex items-center justify-center"
+              {/* MESSAGES */}
+              <div className="flex-1 p-3 space-y-2 overflow-y-auto">
+                {selectedUser.messages.map((msg, idx) => (
+                  <div
+                    key={idx}
+                    className={`flex ${
+                      msg.sender === "you" ? "justify-end" : "justify-start"
+                    }`}
                   >
-                    ×
-                  </button>
+                    <div
+                      className={`max-w-[70%] px-2 py-1 text-xs ${
+                        msg.sender === "you"
+                          ? "bg-white text-black"
+                          : "bg-stone-900 text-stone-200"
+                      }`}
+                    >
+                      {msg.image && (
+                        <img
+                          src={msg.image}
+                          alt="sent"
+                          className="w-full max-h-64 object-cover mb-1"
+                        />
+                      )}
+                      {msg.text && <div>{msg.text}</div>}
+                      <div className="text-xs text-stone-400 mt-1 text-right">
+                        {msg.time}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                <div ref={messagesEndRef} />
+              </div>
+
+              {/* INPUT */}
+              <div className="p-3 border-t border-stone-800 flex flex-col md:flex-row gap-2 shrink-0">
+                <input
+                  type="text"
+                  placeholder="Type a message..."
+                  className="flex-1 px-3 py-2 bg-stone-900 border border-stone-800 text-sm text-stone-200"
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
+                />
+                <div className="flex items-center gap-2">
+                  {imagePreview && (
+                    <div className="flex items-center gap-2 border border-stone-700 bg-stone-950 p-1">
+                      <img
+                        src={imagePreview}
+                        alt="preview"
+                        className="w-8 h-8 object-cover border border-stone-700"
+                      />
+                      <button
+                        onClick={removeImage}
+                        className="w-8 h-8 grid place-items-center border border-stone-700 bg-stone-900 text-stone-200 text-xs"
+                      >
+                        ✖
+                      </button>
+                    </div>
+                  )}
+                  <label
+                    htmlFor="chatImage"
+                    className="inline-flex items-center gap-2 px-3 py-2 border border-stone-800 bg-stone-900 text-stone-200 text-sm cursor-pointer hover:bg-stone-800"
+                  >
+                    Attach image
+                  </label>
+                  <input
+                    id="chatImage"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="hidden"
+                  />
                 </div>
-              )}
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageChange}
-                className="text-sm text-stone-200"
-              />
-            </div>
-            <button
-              onClick={handleSendMessage}
-              className="px-4 py-2 bg-white text-black rounded-md text-sm font-medium hover:bg-stone-300 transition"
-            >
-              Send
-            </button>
-          </div>
+                <button
+                  onClick={handleSendMessage}
+                  className="px-4 py-2 bg-white text-black text-sm font-medium hover:bg-stone-300 border border-stone-800"
+                >
+                  Send
+                </button>
+              </div>
+            </>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }
