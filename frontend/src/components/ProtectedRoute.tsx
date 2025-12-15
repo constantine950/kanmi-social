@@ -1,26 +1,25 @@
-import { Navigate, Outlet, useLocation } from "react-router";
+import { Navigate, Outlet } from "react-router";
 import { useAuthStore } from "../zustand/authStore";
 
-interface ProtectedRouteProps {
-  guestOnly?: boolean;
-}
+export default function ProtectedRoute({ guestOnly = false }) {
+  const { isAuthenticated, authLoading } = useAuthStore();
 
-export default function ProtectedRoute({
-  guestOnly = false,
-}: ProtectedRouteProps) {
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-  const location = useLocation();
+  // ⏳ wait for refresh check
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center text-stone-400 text-sm">
+        Restoring session…
+      </div>
+    );
+  }
 
-  // If guestOnly, redirect logged-in users away
   if (guestOnly && isAuthenticated) {
     return <Navigate to="/home" replace />;
   }
 
-  // If protected, redirect unauthenticated users to login
   if (!guestOnly && !isAuthenticated) {
-    return <Navigate to="/login" replace state={{ from: location }} />;
+    return <Navigate to="/login" replace />;
   }
 
-  // Otherwise, render the page
   return <Outlet />;
 }

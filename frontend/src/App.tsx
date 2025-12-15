@@ -11,19 +11,41 @@ import Explore from "./pages/Explore";
 import AppLayout from "./components/AppLayout";
 import Toast from "./components/Toast";
 import ProtectedRoute from "./components/ProtectedRoute";
+import { useAuthStore } from "./zustand/authStore";
+import { useEffect } from "react";
+import { refreshToken } from "./api/authApi";
 
 function App() {
+  const setAuth = useAuthStore((s) => s.setAuth);
+  const setAuthLoading = useAuthStore((s) => s.setAuthLoading);
+
+  useEffect(() => {
+    const restoreSession = async () => {
+      try {
+        const res = await refreshToken();
+        setAuth(res.data.det.user, res.data.det.newAccessToken);
+        console.log(useAuthStore.getState());
+      } catch {
+        setAuthLoading(false);
+      }
+    };
+
+    restoreSession();
+  }, [setAuth, setAuthLoading]);
+
   return (
     <Router>
       <Toast />
 
       <Routes>
-        {/* Public pages */}
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+        {/* 🔒 Guest-only routes */}
+        <Route element={<ProtectedRoute guestOnly />}>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+        </Route>
 
-        {/* Protected pages */}
+        {/* 🔐 Authenticated routes */}
         <Route element={<ProtectedRoute />}>
           <Route element={<AppLayout />}>
             <Route path="/home" element={<Home />} />

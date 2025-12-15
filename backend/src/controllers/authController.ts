@@ -116,7 +116,10 @@ const refreshToken = catchAsync(async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      data: { newAccessToken, user: payload },
+      det: {
+        newAccessToken,
+        user: payload,
+      },
     });
   });
 });

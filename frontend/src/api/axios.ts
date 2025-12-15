@@ -27,9 +27,12 @@ api.interceptors.response.use(
 
       try {
         const res = await refreshToken();
-        useAuthStore.getState().setAuth(res.data.user, res.data.accessToken);
+        console.log(res);
+        useAuthStore
+          .getState()
+          .setAuth(res.data.det.user, res.data.det.newAccessToken);
 
-        originalRequest.headers.Authorization = `Bearer ${res.data.accessToken}`;
+        originalRequest.headers.Authorization = `Bearer ${res.data.det.newAccessToken}`;
         return api(originalRequest);
       } catch {
         useAuthStore.getState().clearAuth();

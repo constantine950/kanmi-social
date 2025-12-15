@@ -66,4 +66,5 @@ export interface UserRes {
   success: boolean;
   message?: string;
   data?: any;
+  det?: any;
 }
