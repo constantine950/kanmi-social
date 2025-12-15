@@ -27,7 +27,6 @@ api.interceptors.response.use(
 
       try {
         const res = await refreshToken();
-        console.log(res);
         useAuthStore
           .getState()
           .setAuth(res.data.det.user, res.data.det.newAccessToken);

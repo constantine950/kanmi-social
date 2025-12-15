@@ -79,7 +79,7 @@ export default function LandingPage() {
       <section className="px-6 md:px-14 py-20">
         <div className="max-w-6xl mx-auto grid gap-4 md:grid-cols-4">
           {features.map((card, i) => (
-            <Feature card={card} i={i} />
+            <Feature card={card} i={i} key={i} />
           ))}
         </div>
       </section>

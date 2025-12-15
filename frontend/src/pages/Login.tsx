@@ -25,9 +25,7 @@ export default function LoginPage() {
         password,
       });
 
-      // backend returns: { accessToken, user }
-      console.log(res);
-      setAuth(res.data.user, res.data.accessToken);
+      setAuth(res.data.det.user, res.data.det.accessToken);
 
       showToast("Logged in successfully 👋", "success");
       navigate("/home");
