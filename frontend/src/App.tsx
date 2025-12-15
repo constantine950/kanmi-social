@@ -8,12 +8,15 @@ import Post from "./pages/Post";
 import Messages from "./pages/Messages";
 import Notifications from "./pages/Notifications";
 import Explore from "./pages/Explore";
-import ProtectedRoute from "./components/auth/ProtectedRoute";
 import AppLayout from "./components/AppLayout";
+import Toast from "./components/Toast";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
     <Router>
+      <Toast />
+
       <Routes>
         {/* Public pages */}
         <Route path="/" element={<LandingPage />} />

@@ -16,11 +16,9 @@ const UserSchema = new Schema<CustomProperty>(
     profilePicture: {
       url: {
         type: String,
-        required: true,
       },
       publicId: {
         type: String,
-        required: true,
       },
     },
   },

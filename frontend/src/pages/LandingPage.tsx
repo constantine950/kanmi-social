@@ -3,15 +3,13 @@ import Footer from "../components/Footer";
 import { features, mockPosts } from "../mockData/data";
 import Feature from "../components/Feature";
 import MockPost from "../components/MockPost";
+import Font from "../components/Font";
 
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-black text-stone-200 font-[Inter] selection:bg-stone-800 selection:text-stone-200">
       {/* FONT */}
-      <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;500;600;700&display=swap"
-        rel="stylesheet"
-      />
+      <Font />
 
       <style>{`
         @keyframes noise {
@@ -66,7 +64,7 @@ export default function LandingPage() {
               {/* POSTS */}
               <div className="space-y-3">
                 {mockPosts.map((post) => (
-                  <MockPost post={post} />
+                  <MockPost post={post} key={post.id} />
                 ))}
               </div>
 

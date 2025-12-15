@@ -10,6 +10,7 @@ import commentRoutes from "./routes/commentRoutes.ts";
 import notificationRoutes from "./routes/notificationRoutes.ts";
 import { initSocket } from "./socket.ts";
 import messageRoutes from "./routes/messageRoutes.ts";
+import cookieParser from "cookie-parser";
 import { rateLimiter } from "./middlewares/rateLimiter.ts";
 
 connectDB();
@@ -22,6 +23,8 @@ app.use(
     credentials: true,
   })
 );
+
+app.use(cookieParser());
 
 app.use(express.json());
 app.use(rateLimiter);
