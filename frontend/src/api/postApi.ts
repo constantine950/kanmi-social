@@ -7,6 +7,22 @@ interface CreatePostResponse {
   data: Post;
 }
 
+interface GetPostsResponse {
+  success: boolean;
+  data: Post[];
+}
+
+export const getPostsApi = async (
+  page: number,
+  limit = 5
+): Promise<GetPostsResponse> => {
+  const res = await api.get<GetPostsResponse>(
+    `/posts/get-posts?page=${page}&limit=${limit}`
+  );
+
+  return res.data;
+};
+
 export const createPostApi = async (
   formData: FormData
 ): Promise<CreatePostResponse> => {

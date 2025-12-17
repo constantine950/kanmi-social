@@ -1,34 +1,24 @@
-import PostCard from "../components/PostCard";
+// src/pages/Home.tsx
+import { useEffect } from "react";
+import { Virtuoso } from "react-virtuoso";
+import { usePostStore } from "../zustand/postStore";
 import CreatePost from "../components/CreatePost";
+import PostCard from "../components/PostCard";
 
 export default function Home() {
-  const posts = [
-    {
-      username: "alice",
-      profilePic: "/mock/alice.jpg",
-      text: "Enjoying the minimal Kanmi feed!",
-      image: "/cabin-001.jpg",
-      likes: 12,
-      time: "2h ago",
-      comments: [
-        { username: "bob", text: "Nice!" },
-        { username: "charlie", text: "Love this!" },
-      ],
-    },
-    {
-      username: "bob",
-      profilePic: "/mock/bob.jpg",
-      text: "Just a short thought for the day.",
-      likes: 5,
-      time: "5h ago",
-      comments: [{ username: "alice", text: "Interesting..." }],
-    },
-  ];
+  const { posts, fetchPosts, hasMore, loading } = usePostStore();
+
+  // 🔥 Initial fetch
+  useEffect(() => {
+    if (posts.length === 0) {
+      fetchPosts();
+    }
+  }, [fetchPosts, posts.length]);
 
   return (
     <div className="min-h-screen bg-black text-stone-200 font-[Inter] pt-8">
-      <div className="max-w-xl mx-auto w-full px-4 md:px-0 space-y-6">
-        <h1 className="text-2xl md:text-3xl font-[Playfair_Display]">
+      <div className="max-w-xl mx-auto w-full px-4 md:px-0">
+        <h1 className="text-2xl md:text-3xl font-[Playfair_Display] mb-6">
           Home Feed
         </h1>
 
@@ -36,9 +26,28 @@ export default function Home() {
         <CreatePost />
 
         {/* FEED */}
-        {posts.map((post, i) => (
-          <PostCard key={i} {...post} />
-        ))}
+        <div className="h-[calc(100vh-220px)]">
+          <Virtuoso
+            data={posts}
+            endReached={() => {
+              if (hasMore && !loading) fetchPosts();
+            }}
+            itemContent={(index, post) => <PostCard post={post} />}
+            overscan={300}
+            components={{
+              Footer: () =>
+                loading ? (
+                  <div className="py-6 text-center text-stone-500 text-sm">
+                    Loading more posts…
+                  </div>
+                ) : !hasMore ? (
+                  <div className="py-6 text-center text-stone-600 text-sm">
+                    You’re all caught up ✨
+                  </div>
+                ) : null,
+            }}
+          />
+        </div>
       </div>
     </div>
   );

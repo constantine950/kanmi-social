@@ -15,6 +15,11 @@ const createComment = catchAsync(async (req, res, next) => {
 
   const comment = await Comment.create({ postId, userId, text });
 
+  const populatedComment = await Comment.findById(comment._id).populate(
+    "userId",
+    "username profilePicture"
+  );
+
   const post = await Post.findById(postId);
   if (!post) return next(new AppError("Post not found", 404));
 
@@ -44,7 +49,7 @@ const createComment = catchAsync(async (req, res, next) => {
   res.status(201).json({
     success: true,
     message: "Comment created",
-    data: comment,
+    data: populatedComment,
   });
 });
 
@@ -53,7 +58,7 @@ const getPostComments = catchAsync(async (req, res, next) => {
 
   const comments = await Comment.find({ postId })
     .populate("userId", "username profilePicture")
-    .sort({ created_at: -1 });
+    .sort({ createdAt: -1 });
 
   res.status(200).json({
     success: true,

@@ -29,20 +29,34 @@ export interface PostImage {
   publicId: string;
 }
 
+export interface User {
+  _id: string;
+  username: string;
+  profilePicture?: {
+    url: string;
+    publicId: string;
+  };
+}
+
 export interface Post {
   _id: string;
-  uploadedBy:
-    | {
-        _id: string;
-        username: string;
-        profilePicture?: {
-          url: string;
-        };
-      }
-    | string;
-
   text: string;
-  image?: PostImage | null;
-  likes: string[];
+  image?: {
+    url: string;
+    publicId: string;
+  } | null;
+  uploadedBy: User;
+  likes: string[]; // userIds
+  commentsCount: number;
   createdAt: string;
+}
+
+export interface Comment {
+  _id: string;
+  text: string;
+  createdAt: string;
+  user: {
+    username: string;
+    profilePicture?: { url: string };
+  };
 }
