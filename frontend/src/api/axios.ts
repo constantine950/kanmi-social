@@ -4,7 +4,7 @@ import { refreshToken } from "./authApi";
 
 const api = axios.create({
   baseURL: "http://localhost:3000/api",
-  withCredentials: true, // 🔥 send cookies for refresh token
+  withCredentials: true,
 });
 
 // Request interceptor: attach access token

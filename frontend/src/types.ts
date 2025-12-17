@@ -17,3 +17,32 @@ export interface Mockpost {
 export interface MockPostProp {
   post: Mockpost;
 }
+
+export interface PostStore {
+  posts: Post[];
+  loading: boolean;
+  createPost: (formData: FormData) => Promise<void>;
+}
+
+export interface PostImage {
+  url: string;
+  publicId: string;
+}
+
+export interface Post {
+  _id: string;
+  uploadedBy:
+    | {
+        _id: string;
+        username: string;
+        profilePicture?: {
+          url: string;
+        };
+      }
+    | string;
+
+  text: string;
+  image?: PostImage | null;
+  likes: string[];
+  createdAt: string;
+}

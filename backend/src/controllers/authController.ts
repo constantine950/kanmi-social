@@ -80,7 +80,7 @@ const loginUser = catchAsync(async (req, res, next) => {
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
+    sameSite: "lax",
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
@@ -107,7 +107,7 @@ const refreshToken = catchAsync(async (req, res, next) => {
 
   jwt.verify(token, process.env.JWT_REFRESH_KEY!, (err: any, decoded: any) => {
     if (err) {
-      return next(new AppError("Invalid refresh token", 403));
+      return next(new AppError("Invalid refresh token", 401));
     }
 
     const payload = {

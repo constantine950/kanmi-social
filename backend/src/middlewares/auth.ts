@@ -12,29 +12,30 @@ const authMiddleware = (
   res: Response<UserRes>,
   next: NextFunction
 ) => {
-  const authHeader = req.headers["authorization"];
+  const authHeader = req.headers.authorization;
 
-  const token = authHeader && authHeader.split(" ")[1];
-  if (!token) {
-    return next(new AppError("Access denied", 401));
+  if (!authHeader?.startsWith("Bearer ")) {
+    return next(new AppError("Access token missing", 401));
   }
 
+  const token = authHeader.split(" ")[1];
+
   try {
-    const decodeTokenInfo = jwt.verify(
-      token,
-      process.env.JWT_KEY!
-    ) as CustomJwtPayload;
+    const decoded = jwt.verify(token, process.env.JWT_KEY!) as CustomJwtPayload;
+
     req.userInfo = {
-      user_id: decodeTokenInfo.user_id,
-      username: decodeTokenInfo.username,
-      profilePicture: {
-        url: decodeTokenInfo.profilePicture.url,
-        publicId: decodeTokenInfo.profilePicture.publicId,
-      },
+      user_id: decoded.user_id,
+      username: decoded.username,
+      profilePicture: decoded.profilePicture,
     };
+
     next();
-  } catch (error) {
-    next(new AppError("Please login again", 401));
+  } catch (err: any) {
+    if (err.name === "TokenExpiredError") {
+      return next(new AppError("Access token expired", 401));
+    }
+
+    return next(new AppError("Invalid access token", 401));
   }
 };
 

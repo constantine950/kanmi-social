@@ -25,6 +25,8 @@ function App() {
         const res = await refreshToken();
         setAuth(res.data.det.user, res.data.det.newAccessToken);
       } catch {
+        useAuthStore.getState().clearAuth();
+      } finally {
         setAuthLoading(false);
       }
     };
