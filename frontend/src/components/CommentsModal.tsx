@@ -26,6 +26,7 @@ export default function CommentsModal({
       try {
         const data = await getCommentsApi(postId);
         setComments(data);
+        console.log(data);
       } finally {
         setLoading(false);
       }
@@ -41,7 +42,7 @@ export default function CommentsModal({
       _id: crypto.randomUUID(),
       text: commentInput,
       createdAt: new Date().toISOString(),
-      user: { username: "you" },
+      userId: { username: "you" },
     };
 
     setComments((prev) => [...prev, optimisticComment]);
@@ -89,7 +90,7 @@ export default function CommentsModal({
           {comments.map((c) => (
             <div key={c._id} className="text-sm text-stone-300">
               <span className="font-semibold text-white">
-                {c.user.username}
+                {c.userId.username}
               </span>{" "}
               {c.text}
             </div>

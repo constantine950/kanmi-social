@@ -52,12 +52,17 @@ const getAllPosts = catchAsync(async (req, res, next) => {
     .populate("uploadedBy", "username profilePicture")
     .sort({ createdAt: -1 })
     .skip(skip)
-    .limit(limit);
+    .limit(limit)
+    .lean();
+
+  const normalizedPosts = posts.map((post) => ({
+    ...post,
+    likes: post.likes.map((id) => id.toString()),
+  }));
 
   res.status(200).json({
     success: true,
-    message: `All ${posts.length} posts fetched`,
-    data: posts,
+    posts: normalizedPosts,
   });
 });
 
@@ -200,7 +205,7 @@ const togglePostLike = catchAsync(async (req, res, next) => {
   res.status(200).json({
     success: true,
     message: `Liked ${!alreadyLiked}`,
-    data: post.likes.length,
+    data: { likes: post.likes.length, alreadyLiked },
   });
 });
 

@@ -25,7 +25,7 @@ export default function LoginPage() {
         password,
       });
 
-      setAuth(res.data.det.user, res.data.det.accessToken);
+      setAuth(res.data.user, res.data.accessToken);
 
       showToast("Logged in successfully 👋", "success");
       navigate("/home");

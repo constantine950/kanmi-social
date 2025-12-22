@@ -46,8 +46,8 @@ export interface Post {
     publicId: string;
   } | null;
   uploadedBy: User;
-  likes: string[]; // userIds
-  commentsCount: number;
+  likes: string[];
+  alreadyLiked: boolean;
   createdAt: string;
 }
 
@@ -55,7 +55,7 @@ export interface Comment {
   _id: string;
   text: string;
   createdAt: string;
-  user: {
+  userId: {
     username: string;
     profilePicture?: { url: string };
   };

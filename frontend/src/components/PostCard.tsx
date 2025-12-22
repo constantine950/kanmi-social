@@ -2,39 +2,39 @@ import { useState, useRef } from "react";
 import { Heart, MessageCircle } from "lucide-react";
 import CommentsModal from "./CommentsModal";
 import type { Post } from "../types";
+import { usePostStore } from "../zustand/postStore";
+import { useAuthStore } from "../zustand/authStore";
 
 interface PostCardProps {
   post: Post;
 }
 
 export default function PostCard({ post }: PostCardProps) {
-  const { text, image, uploadedBy, likes, commentsCount, createdAt } = post;
+  const { text, image, uploadedBy, likes, createdAt } = post;
 
-  const [liked, setLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(likes.length);
+  const toggleLike = usePostStore((s) => s.toggleLike);
+  const userId = useAuthStore((s) => s.user?._id);
+
+  const liked = !!userId && post.likes.includes(userId);
+  const likeCount = likes.length;
+
   const [burst, setBurst] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const lastTap = useRef(0);
 
-  const handleLikeToggle = () => {
-    setLiked((prev) => {
-      const next = !prev;
-      setLikeCount((c) => (next ? c + 1 : c - 1));
-      return next;
-    });
-  };
-
   const triggerDoubleTap = () => {
     const now = Date.now();
+
     if (now - lastTap.current < 300) {
       if (!liked) {
-        setLiked(true);
-        setLikeCount((c) => c + 1);
+        toggleLike(post._id);
       }
+
       setBurst(true);
       setTimeout(() => setBurst(false), 500);
     }
+
     lastTap.current = now;
   };
 
@@ -82,7 +82,7 @@ export default function PostCard({ post }: PostCardProps) {
         {/* ACTIONS */}
         <div className="flex items-center gap-6 text-sm text-stone-300 pt-2">
           <button
-            onClick={handleLikeToggle}
+            onClick={() => toggleLike(post._id)}
             className="flex items-center gap-1"
           >
             <Heart
@@ -98,12 +98,10 @@ export default function PostCard({ post }: PostCardProps) {
             className="flex items-center gap-1"
           >
             <MessageCircle size={18} />
-            {commentsCount}
           </button>
         </div>
       </div>
 
-      {/* COMMENTS MODAL */}
       <CommentsModal
         postId={post._id}
         isOpen={isModalOpen}

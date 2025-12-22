@@ -1,7 +1,8 @@
 // src/zustand/postStore.ts
 import { create } from "zustand";
-import { createPostApi, getPostsApi } from "../api/postApi";
+import { createPostApi, getPostsApi, toggleLikeApi } from "../api/postApi";
 import type { Post } from "../types";
+import { useAuthStore } from "./authStore";
 
 interface PostStore {
   posts: Post[];
@@ -12,6 +13,7 @@ interface PostStore {
 
   fetchPosts: () => Promise<void>;
   createPost: (formData: FormData) => Promise<void>;
+  toggleLike: (postId: string) => Promise<void>;
   resetFeed: () => void;
 }
 
@@ -38,17 +40,16 @@ export const usePostStore = create<PostStore>((set, get) => ({
     set({ loading: true });
 
     try {
-      const res = await getPostsApi(page);
+      const posts = await getPostsApi(page);
 
-      console.log(res);
       set((state) => ({
-        posts: [...state.posts, ...res.data],
+        posts: [...state.posts, ...posts],
         pageCache: {
           ...state.pageCache,
-          [page]: res.data,
+          [page]: posts,
         },
         page: state.page + 1,
-        hasMore: res.data.length > 0,
+        hasMore: posts.length > 0,
       }));
     } finally {
       set({ loading: false });
@@ -67,10 +68,48 @@ export const usePostStore = create<PostStore>((set, get) => ({
     }));
   },
 
+  toggleLike: async (postId: string) => {
+    const userId = useAuthStore.getState().user?._id;
+    if (!userId) return;
+
+    // ✅ Optimistic update ONLY
+    set((state) => ({
+      posts: state.posts.map((p) =>
+        p._id === postId
+          ? {
+              ...p,
+              likes: p.likes.includes(userId)
+                ? p.likes.filter((id) => id !== userId)
+                : [...p.likes, userId],
+            }
+          : p
+      ),
+    }));
+
+    try {
+      await toggleLikeApi(postId);
+    } catch {
+      // rollback
+      set((state) => ({
+        posts: state.posts.map((p) =>
+          p._id === postId
+            ? {
+                ...p,
+                likes: p.likes.includes(userId)
+                  ? p.likes.filter((id) => id !== userId)
+                  : [...p.likes, userId],
+              }
+            : p
+        ),
+      }));
+    }
+  },
+
   resetFeed: () =>
     set({
       posts: [],
       page: 1,
       hasMore: true,
+      pageCache: {},
     }),
 }));

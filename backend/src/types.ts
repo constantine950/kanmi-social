@@ -65,6 +65,9 @@ export interface CustomJwtPayload extends JwtPayload {
 export interface UserRes {
   success: boolean;
   message?: string;
+  posts?: any;
   data?: any;
-  det?: any;
+  user?: any;
+  newAccessToken?: string;
+  accessToken?: string;
 }

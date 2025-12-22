@@ -87,13 +87,11 @@ const loginUser = catchAsync(async (req, res, next) => {
   res.status(200).json({
     success: true,
     message: "User logged in successfully",
-    det: {
-      accessToken,
-      user: {
-        id: user._id,
-        username: user.username,
-        profilePicture: user.profilePicture,
-      },
+    accessToken,
+    user: {
+      id: user._id,
+      username: user.username,
+      profilePicture: user.profilePicture,
     },
   });
 });
@@ -120,10 +118,8 @@ const refreshToken = catchAsync(async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      det: {
-        newAccessToken,
-        user: payload,
-      },
+      user: payload,
+      newAccessToken,
     });
   });
 });

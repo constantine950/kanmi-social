@@ -16,14 +16,20 @@ import { useEffect } from "react";
 import { refreshToken } from "./api/authApi";
 
 function App() {
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const setAuth = useAuthStore((s) => s.setAuth);
   const setAuthLoading = useAuthStore((s) => s.setAuthLoading);
 
   useEffect(() => {
     const restoreSession = async () => {
+      if (!isAuthenticated) {
+        setAuthLoading(false);
+        return;
+      }
+
       try {
         const res = await refreshToken();
-        setAuth(res.data.det.user, res.data.det.newAccessToken);
+        setAuth(res.data.user, res.data.newAccessToken);
       } catch {
         useAuthStore.getState().clearAuth();
       } finally {
@@ -32,7 +38,7 @@ function App() {
     };
 
     restoreSession();
-  }, [setAuth, setAuthLoading]);
+  }, [isAuthenticated, setAuth, setAuthLoading]);
 
   return (
     <Router>

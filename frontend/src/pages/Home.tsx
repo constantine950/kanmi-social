@@ -8,7 +8,6 @@ import PostCard from "../components/PostCard";
 export default function Home() {
   const { posts, fetchPosts, hasMore, loading } = usePostStore();
 
-  // 🔥 Initial fetch
   useEffect(() => {
     if (posts.length === 0) {
       fetchPosts();
