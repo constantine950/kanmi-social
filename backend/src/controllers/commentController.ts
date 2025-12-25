@@ -1,31 +1,34 @@
 import Comment from "../models/Comment.ts";
 import Notification from "../models/Notification.ts";
 import Post from "../models/Post.ts";
+import User from "../models/User.ts";
 import AppError from "../utils/AppError.ts";
 import catchAsync from "../utils/catchAsync.ts";
 import { getIO, onlineUsers } from "../socket.ts";
-import User from "../models/User.ts";
 
-const createComment = catchAsync(async (req, res, next) => {
+export const createComment = catchAsync(async (req, res, next) => {
   const { text } = req.body;
   const postId = req.params.id;
   const userId = req.userInfo?.user_id;
 
-  const io = getIO();
+  if (!text) return next(new AppError("Comment text is required", 400));
 
-  const comment = await Comment.create({ postId, userId, text });
+  const post = await Post.findById(postId);
+  if (!post) return next(new AppError("Post not found", 404));
+
+  const comment = await Comment.create({
+    postId,
+    userId,
+    text,
+  });
 
   const populatedComment = await Comment.findById(comment._id).populate(
     "userId",
     "username profilePicture"
   );
 
-  const post = await Post.findById(postId);
-  if (!post) return next(new AppError("Post not found", 404));
-
+  // 🔔 Notify post owner
   const postOwnerId = post.uploadedBy.toString();
-
-  // Notify the post owner if commenter is not the same person
   if (postOwnerId !== userId) {
     const notification = await Notification.create({
       recipient: postOwnerId,
@@ -35,12 +38,15 @@ const createComment = catchAsync(async (req, res, next) => {
       message: "commented on your post",
     });
 
+    const io = getIO();
     const recipientSocketId = onlineUsers.get(postOwnerId);
+
     if (recipientSocketId) {
-      const senderName = await User.findById(userId);
+      const sender = await User.findById(userId).select("username");
       io.to(recipientSocketId).emit("notification:new", {
+        type: "comment",
         message: notification.message,
-        from: senderName?.username,
+        from: sender?.username,
         postId,
       });
     }
@@ -48,12 +54,11 @@ const createComment = catchAsync(async (req, res, next) => {
 
   res.status(201).json({
     success: true,
-    message: "Comment created",
     data: populatedComment,
   });
 });
 
-const getPostComments = catchAsync(async (req, res, next) => {
+export const getPostComments = catchAsync(async (req, res) => {
   const postId = req.params.id;
 
   const comments = await Comment.find({ postId })
@@ -62,9 +67,6 @@ const getPostComments = catchAsync(async (req, res, next) => {
 
   res.status(200).json({
     success: true,
-    message: "Post comments fetched",
     data: comments,
   });
 });
-
-export { createComment, getPostComments };

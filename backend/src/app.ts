@@ -17,6 +17,9 @@ connectDB();
 
 const app = express();
 
+// 🚫 Disable ETag generation
+app.set("etag", false);
+
 app.use(
   cors({
     origin: "http://localhost:5173",
@@ -32,6 +35,11 @@ app.use(rateLimiter);
 const server = http.createServer(app);
 
 initSocket(server);
+
+app.use("/api", (req, res, next) => {
+  res.setHeader("Cache-Control", "no-store");
+  next();
+});
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);

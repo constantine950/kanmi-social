@@ -1,5 +1,5 @@
-import { useState, useRef } from "react";
-import { Heart, MessageCircle } from "lucide-react";
+import { memo, useState, useRef } from "react";
+import { Heart, MessageCircle, Trash2 } from "lucide-react";
 import CommentsModal from "./CommentsModal";
 import type { Post } from "../types";
 import { usePostStore } from "../zustand/postStore";
@@ -9,27 +9,40 @@ interface PostCardProps {
   post: Post;
 }
 
-export default function PostCard({ post }: PostCardProps) {
-  const { text, image, uploadedBy, likes, createdAt } = post;
+const PostCard = memo(function PostCard({ post }: PostCardProps) {
+  // 🔗 Subscribe ONLY to this post
+  const storePost = usePostStore((s) =>
+    s.posts.find((p) => p._id === post._id)
+  );
 
   const toggleLike = usePostStore((s) => s.toggleLike);
-  const userId = useAuthStore((s) => s.user?._id);
+  const deletePost = usePostStore((s) => s.deletePost);
 
-  const liked = !!userId && post.likes.includes(userId);
-  const likeCount = likes.length;
+  // 🔒 In-flight like lock (per post)
+  const isLiking = usePostStore((s) => s.likingPosts.has(post._id));
 
+  // ⚠️ Hooks MUST be called unconditionally
   const [burst, setBurst] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
   const lastTap = useRef(0);
+  const currentUser = useAuthStore((s) => s.user);
+
+  // 🛡️ Safe early return AFTER hooks
+  if (!storePost) return null;
+
+  const { text, image, uploadedBy, createdAt } = storePost;
+  const liked = storePost.alreadyLiked;
+  const likeCount = storePost.likes.length;
+
+  const isOwner = currentUser?.user_id === uploadedBy._id;
 
   const triggerDoubleTap = () => {
+    if (isLiking) return;
+
     const now = Date.now();
 
     if (now - lastTap.current < 300) {
-      if (!liked) {
-        toggleLike(post._id);
-      }
+      if (!liked) toggleLike(storePost._id);
 
       setBurst(true);
       setTimeout(() => setBurst(false), 500);
@@ -38,24 +51,50 @@ export default function PostCard({ post }: PostCardProps) {
     lastTap.current = now;
   };
 
+  const handleDelete = async () => {
+    if (!isOwner) return;
+    if (!confirm("Are you sure you want to delete this post?")) return;
+
+    await deletePost(storePost._id);
+  };
+
   return (
     <>
       <div className="border border-stone-800 bg-stone-950 p-4 space-y-3">
         {/* USER */}
-        <div className="flex items-center gap-3">
-          <img
-            src={uploadedBy.profilePicture?.url || "/avatar.png"}
-            alt={uploadedBy.username}
-            className="w-8 h-8 rounded-full border border-stone-700 object-cover"
-          />
-          <div>
-            <p className="text-sm font-medium text-white">
-              {uploadedBy.username}
-            </p>
-            <p className="text-xs text-stone-500">
-              {new Date(createdAt).toLocaleString()}
-            </p>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <img
+              src={uploadedBy.profilePicture?.url || "/avatar.png"}
+              alt={uploadedBy.username}
+              className="w-8 h-8 rounded-full border border-stone-700 object-cover"
+            />
+            <div>
+              <p className="text-sm font-medium text-white">
+                {uploadedBy.username}
+              </p>
+              <p className="text-xs text-stone-500">
+                {new Date(createdAt).toLocaleString("en-US", {
+                  dateStyle: "medium",
+                  timeStyle: "short",
+                })}
+              </p>
+            </div>
           </div>
+
+          {/* DELETE BUTTON */}
+          <button
+            onClick={handleDelete}
+            disabled={!isOwner}
+            className={`p-1 rounded text-xs flex items-center gap-1 ${
+              isOwner
+                ? "text-red-500 hover:bg-red-600/10"
+                : "text-stone-600 cursor-not-allowed"
+            }`}
+          >
+            <Trash2 size={16} />
+            Delete
+          </button>
         </div>
 
         {/* TEXT */}
@@ -82,12 +121,21 @@ export default function PostCard({ post }: PostCardProps) {
         {/* ACTIONS */}
         <div className="flex items-center gap-6 text-sm text-stone-300 pt-2">
           <button
-            onClick={() => toggleLike(post._id)}
-            className="flex items-center gap-1"
+            disabled={isLiking}
+            onClick={() => toggleLike(storePost._id)}
+            className={`flex items-center gap-1 ${
+              isLiking ? "opacity-50 cursor-not-allowed" : ""
+            }`}
           >
             <Heart
               size={18}
-              className={liked ? "text-red-500" : "text-stone-300"}
+              className={
+                isLiking
+                  ? "text-stone-500 animate-pulse"
+                  : liked
+                  ? "text-red-500"
+                  : "text-stone-300"
+              }
               fill={liked ? "red" : "none"}
             />
             {likeCount}
@@ -103,10 +151,12 @@ export default function PostCard({ post }: PostCardProps) {
       </div>
 
       <CommentsModal
-        postId={post._id}
+        postId={storePost._id}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
       />
     </>
   );
-}
+});
+
+export default PostCard;

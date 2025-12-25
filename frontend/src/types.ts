@@ -46,7 +46,7 @@ export interface Post {
     publicId: string;
   } | null;
   uploadedBy: User;
-  likes: string[];
+  likes: string[]; // Array of user ID strings
   alreadyLiked: boolean;
   createdAt: string;
 }
@@ -57,6 +57,8 @@ export interface Comment {
   createdAt: string;
   userId: {
     username: string;
-    profilePicture?: { url: string };
+    profilePicture?: {
+      url: string;
+    };
   };
 }

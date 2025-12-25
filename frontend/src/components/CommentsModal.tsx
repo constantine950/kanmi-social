@@ -26,7 +26,6 @@ export default function CommentsModal({
       try {
         const data = await getCommentsApi(postId);
         setComments(data);
-        console.log(data);
       } finally {
         setLoading(false);
       }
@@ -42,7 +41,9 @@ export default function CommentsModal({
       _id: crypto.randomUUID(),
       text: commentInput,
       createdAt: new Date().toISOString(),
-      userId: { username: "you" },
+      userId: {
+        username: "You",
+      },
     };
 
     setComments((prev) => [...prev, optimisticComment]);
@@ -64,6 +65,7 @@ export default function CommentsModal({
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex justify-center items-end animate-fadeIn">
+      {/* ⬇️ SAME BOTTOM SHEET */}
       <div className="w-full max-w-md h-[75vh] bg-stone-950 border-t border-stone-800 rounded-t-2xl p-4 flex flex-col animate-slideUp">
         {/* HEADER */}
         <div className="flex justify-between items-center pb-3 border-b border-stone-800">
@@ -88,11 +90,19 @@ export default function CommentsModal({
           )}
 
           {comments.map((c) => (
-            <div key={c._id} className="text-sm text-stone-300">
-              <span className="font-semibold text-white">
-                {c.userId.username}
-              </span>{" "}
-              {c.text}
+            <div key={c._id} className="flex gap-3">
+              <img
+                src={c.userId.profilePicture?.url || "/avatar-placeholder.png"}
+                alt="avatar"
+                className="w-8 h-8 rounded-full object-cover"
+              />
+
+              <div className="text-sm text-stone-300">
+                <span className="font-semibold text-white">
+                  {c.userId.username}
+                </span>{" "}
+                {c.text}
+              </div>
             </div>
           ))}
         </div>

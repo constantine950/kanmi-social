@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 interface User {
-  _id: string;
+  user_id: string;
   username: string;
   profilePicture?: { url: string; publicId: string };
 }
@@ -39,6 +39,7 @@ export const useAuthStore = create<AuthState>()(
           user: null,
           accessToken: null,
           isAuthenticated: false,
+          authLoading: false,
         }),
 
       setAuthLoading: (val) => set({ authLoading: val }),
@@ -46,8 +47,13 @@ export const useAuthStore = create<AuthState>()(
     {
       name: "auth-storage",
       partialize: (state) => ({
-        isAuthenticated: state.isAuthenticated, // 🔑 ONLY persist this
+        user: state.user,
+        accessToken: state.accessToken,
+        isAuthenticated: state.isAuthenticated,
       }),
+      onRehydrateStorage: () => (state) => {
+        state?.setAuthLoading(false);
+      },
     }
   )
 );

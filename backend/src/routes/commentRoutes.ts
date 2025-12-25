@@ -8,6 +8,6 @@ import authMiddleware from "../middlewares/auth.ts";
 const commentRoutes = express.Router();
 
 commentRoutes.post("/:id", authMiddleware, createComment);
-commentRoutes.get("/:id", getPostComments);
+commentRoutes.get("/:id", authMiddleware, getPostComments);
 
 export default commentRoutes;

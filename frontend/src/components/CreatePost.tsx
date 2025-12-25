@@ -9,6 +9,7 @@ export default function CreatePost() {
   const [preview, setPreview] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const isSubmitting = useRef(false); // 🔒 lock for double-click prevention
 
   const createPost = usePostStore((s) => s.createPost);
   const loading = usePostStore((s) => s.loading);
@@ -22,16 +23,19 @@ export default function CreatePost() {
   const removeImage = () => {
     setImage(null);
     setPreview(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // 🚫 prevent double submit
+    if (loading || isSubmitting.current) return;
+    isSubmitting.current = true;
+
     if (!text.trim()) {
       showToast("Post text is required", "error");
+      isSubmitting.current = false;
       return;
     }
 
@@ -46,7 +50,9 @@ export default function CreatePost() {
       removeImage();
     } catch (error) {
       showToast("Failed to create post", "error");
-      console.log(error);
+      console.error(error);
+    } finally {
+      isSubmitting.current = false;
     }
   };
 

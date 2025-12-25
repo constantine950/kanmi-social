@@ -48,6 +48,8 @@ const getAllPosts = catchAsync(async (req, res, next) => {
   const limit = Number(req.query.limit) || 5;
   const skip = (page - 1) * limit;
 
+  const userId = req.userInfo?.user_id?.toString();
+
   const posts = await Post.find()
     .populate("uploadedBy", "username profilePicture")
     .sort({ createdAt: -1 })
@@ -55,10 +57,15 @@ const getAllPosts = catchAsync(async (req, res, next) => {
     .limit(limit)
     .lean();
 
-  const normalizedPosts = posts.map((post) => ({
-    ...post,
-    likes: post.likes.map((id) => id.toString()),
-  }));
+  const normalizedPosts = posts.map((post) => {
+    const likes = post.likes.map((id) => id.toString());
+
+    return {
+      ...post,
+      likes,
+      alreadyLiked: userId ? likes.includes(userId) : false,
+    };
+  });
 
   res.status(200).json({
     success: true,
@@ -173,13 +180,14 @@ const togglePostLike = catchAsync(async (req, res, next) => {
   if (!post) return next(new AppError("post not found", 404));
 
   const alreadyLiked = post.likes.includes(userId!);
+  let updatedAlreadyLiked: boolean;
 
   if (alreadyLiked) {
     post.likes = post.likes.filter((id) => id.toString() !== userId);
+    updatedAlreadyLiked = false;
   } else {
     post.likes.push(userId!);
-
-    // Send notification to post owner if not self
+    updatedAlreadyLiked = true;
     if (post.uploadedBy.toString() !== userId) {
       const notification = await Notification.create({
         recipient: post.uploadedBy,
@@ -204,8 +212,10 @@ const togglePostLike = catchAsync(async (req, res, next) => {
 
   res.status(200).json({
     success: true,
-    message: `Liked ${!alreadyLiked}`,
-    data: { likes: post.likes.length, alreadyLiked },
+    data: {
+      likes: post.likes.map((id) => id.toString()),
+      alreadyLiked: updatedAlreadyLiked,
+    },
   });
 });
 

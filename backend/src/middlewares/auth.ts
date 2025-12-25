@@ -12,6 +12,15 @@ const authMiddleware = (
   res: Response<UserRes>,
   next: NextFunction
 ) => {
+  // 🚫 Prevent caching for auth-protected routes
+  res.setHeader(
+    "Cache-Control",
+    "no-store, no-cache, must-revalidate, proxy-revalidate"
+  );
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("Expires", "0");
+  res.setHeader("Surrogate-Control", "no-store");
+
   const authHeader = req.headers.authorization;
 
   if (!authHeader?.startsWith("Bearer ")) {
