@@ -122,31 +122,33 @@ const updatePost = catchAsync(async (req, res, next) => {
   const { text } = req.body;
   const userId = req.userInfo?.user_id;
 
-  if (!text) {
+  if (!text || !text.trim()) {
     return next(new AppError("Post text is required", 400));
   }
 
   const post = await Post.findById(postId);
+  if (!post) {
+    return next(new AppError("Post not found", 404));
+  }
 
-  if (post?.uploadedBy.toString() !== userId) {
+  if (post.uploadedBy.toString() !== userId) {
     return res.status(403).json({
       success: false,
-      message: "Not permitted, You did not own this post",
+      message: "Not permitted, you do not own this post",
     });
   }
 
-  let imageData = {
-    url: post?.image.url,
-    publicId: post?.image.publicId,
-  };
+  let imageData = post.image ?? null;
 
+  // 🔄 Handle image replacement
   if (req.file) {
-    await cloudinary.uploader.destroy(post?.image.publicId!);
+    if (post.image?.publicId) {
+      await cloudinary.uploader.destroy(post.image.publicId);
+    }
 
     const uploaded = await uploadBufferToCloudinary(req.file.buffer);
-
     if (!uploaded) {
-      return next(new AppError("Not able to upload image. Try again", 500));
+      return next(new AppError("Image upload failed. Try again", 500));
     }
 
     imageData = {
@@ -158,11 +160,11 @@ const updatePost = catchAsync(async (req, res, next) => {
   const updatedPost = await Post.findByIdAndUpdate(
     postId,
     {
-      text,
+      text: text.trim(),
       image: imageData,
     },
     { new: true, runValidators: true }
-  );
+  ).populate("uploadedBy", "username profilePicture");
 
   res.status(200).json({
     success: true,

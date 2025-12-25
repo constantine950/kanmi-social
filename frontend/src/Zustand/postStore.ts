@@ -4,6 +4,7 @@ import {
   deletePostApi,
   getPostsApi,
   toggleLikeApi,
+  updatePostApi,
 } from "../api/postApi";
 import type { Post } from "../types";
 import { useAuthStore } from "./authStore";
@@ -15,12 +16,14 @@ interface PostStore {
   hasMore: boolean;
   pageCache: Record<number, Post[]>;
 
-  // 🔒 like lock
+  // 🔒 locks
   likingPosts: Set<string>;
+  updatingPostId: string | null;
 
   fetchPosts: () => Promise<void>;
   createPost: (formData: FormData) => Promise<void>;
   toggleLike: (postId: string) => Promise<void>;
+  updatePost: (postId: string, formData: FormData) => Promise<void>;
   deletePost: (postId: string) => Promise<void>;
   resetFeed: () => void;
 }
@@ -32,6 +35,7 @@ export const usePostStore = create<PostStore>((set, get) => ({
   hasMore: true,
   pageCache: {},
   likingPosts: new Set(),
+  updatingPostId: null,
 
   // ✅ FETCH POSTS
   fetchPosts: async () => {
@@ -69,23 +73,33 @@ export const usePostStore = create<PostStore>((set, get) => ({
   createPost: async (formData) => {
     const res = await createPostApi(formData);
 
+    const user = useAuthStore.getState().user;
+
+    const newPost: Post = {
+      ...res.data,
+      alreadyLiked: false,
+      likes: [],
+      uploadedBy: {
+        ...res.data.uploadedBy,
+        _id: user?.user_id || res.data.uploadedBy._id,
+      },
+    };
+
     set((state) => ({
-      posts: [res.data, ...state.posts],
+      posts: [newPost, ...state.posts],
       pageCache: {
         ...state.pageCache,
-        1: [res.data, ...(state.pageCache[1] || [])],
+        1: [newPost, ...(state.pageCache[1] || [])],
       },
     }));
   },
 
-  // ❤️ TOGGLE LIKE (LOCKED + OPTIMISTIC)
+  // ❤️ TOGGLE LIKE
   toggleLike: async (postId: string) => {
     const userId = useAuthStore.getState().user?.user_id;
     if (!userId) return;
 
     const { likingPosts, posts } = get();
-
-    // 🔒 prevent double request
     if (likingPosts.has(postId)) return;
 
     const post = posts.find((p) => p._id === postId);
@@ -94,14 +108,14 @@ export const usePostStore = create<PostStore>((set, get) => ({
     const wasLiked = post.alreadyLiked;
     const previousLikes = [...post.likes];
 
-    // 🔒 mark as in-flight
+    // lock
     set((state) => {
       const next = new Set(state.likingPosts);
       next.add(postId);
       return { likingPosts: next };
     });
 
-    // ⚡ optimistic update
+    // optimistic update
     set((state) => ({
       posts: state.posts.map((p) =>
         p._id === postId
@@ -119,7 +133,6 @@ export const usePostStore = create<PostStore>((set, get) => ({
     try {
       const response = await toggleLikeApi(postId);
 
-      // 🔁 sync with backend
       set((state) => ({
         posts: state.posts.map((p) =>
           p._id === postId
@@ -131,10 +144,8 @@ export const usePostStore = create<PostStore>((set, get) => ({
             : p
         ),
       }));
-    } catch (err) {
-      console.error("Failed to toggle like:", err);
-
-      // ⏪ rollback
+    } catch {
+      // rollback
       set((state) => ({
         posts: state.posts.map((p) =>
           p._id === postId
@@ -147,7 +158,7 @@ export const usePostStore = create<PostStore>((set, get) => ({
         ),
       }));
     } finally {
-      // 🔓 unlock
+      // unlock
       set((state) => {
         const next = new Set(state.likingPosts);
         next.delete(postId);
@@ -156,17 +167,34 @@ export const usePostStore = create<PostStore>((set, get) => ({
     }
   },
 
+  // ✏️ UPDATE POST (NEW)
+  updatePost: async (postId, formData) => {
+    if (get().updatingPostId === postId) return;
+
+    set({ updatingPostId: postId });
+
+    try {
+      const res = await updatePostApi(postId, formData);
+
+      set((state) => ({
+        posts: state.posts.map((p) => (p._id === postId ? res.data : p)),
+        pageCache: Object.fromEntries(
+          Object.entries(state.pageCache).map(([page, posts]) => [
+            page,
+            posts.map((p) => (p._id === postId ? res.data : p)),
+          ])
+        ),
+      }));
+    } finally {
+      set({ updatingPostId: null });
+    }
+  },
+
+  // 🗑️ DELETE POST
   deletePost: async (postId: string) => {
-    const userId = useAuthStore.getState().user?.user_id;
-    if (!userId) return;
-
-    const postIndex = get().posts.findIndex((p) => p._id === postId);
-    if (postIndex === -1) return;
-
     try {
       await deletePostApi(postId);
 
-      // Remove post from store
       set((state) => ({
         posts: state.posts.filter((p) => p._id !== postId),
         pageCache: Object.fromEntries(
@@ -188,5 +216,6 @@ export const usePostStore = create<PostStore>((set, get) => ({
       hasMore: true,
       pageCache: {},
       likingPosts: new Set(),
+      updatingPostId: null,
     }),
 }));
