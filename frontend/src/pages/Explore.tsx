@@ -1,46 +1,59 @@
+import { useEffect } from "react";
+import { Virtuoso } from "react-virtuoso";
 import PostCard from "../components/PostCard";
+import { usePostStore } from "../zustand/postStore";
 
 export default function Explore() {
-  const explorePosts = [
-    {
-      username: "eve",
-      profilePic: "/mock/eve.jpg",
-      text: "Exploring Kanmi's minimal vibes! 🌿",
-      image: "/mock/explore1.jpg",
-      likes: 15,
-      time: "1h ago",
-      comments: [{ username: "alice", text: "Cool!" }],
-    },
-    {
-      username: "frank",
-      profilePic: "/mock/frank.jpg",
-      text: "Just sharing a short thought.",
-      likes: 8,
-      time: "3h ago",
-      comments: [{ username: "eve", text: "Nice one!" }],
-    },
-    {
-      username: "grace",
-      profilePic: "/mock/grace.jpg",
-      text: "Check out this amazing view!",
-      image: "/mock/explore2.jpg",
-      likes: 23,
-      time: "5h ago",
-      comments: [{ username: "frank", text: "Wow!" }],
-    },
-  ];
+  const {
+    trendingPosts,
+    loading,
+    trendingLoaded,
+    trendingHasMore,
+    fetchTrendingPosts,
+  } = usePostStore();
+
+  // Initial fetch
+  useEffect(() => {
+    if (!trendingLoaded) {
+      fetchTrendingPosts();
+    }
+  }, [trendingLoaded, fetchTrendingPosts]);
 
   return (
-    <div className="min-h-screen bg-black text-stone-200 font-[Inter] px-6 md:px-14 pt-8">
-      {/* Feed container aligned left, same as Home */}
+    <div className="min-h-screen bg-black text-stone-200 px-6 md:px-14 pt-8">
       <div className="max-w-xl mx-auto space-y-6">
-        <h1 className="text-2xl md:text-3xl font-[Playfair_Display] mb-4">
-          Explore Trending Feed
-        </h1>
+        <h1 className="text-3xl font-[Playfair_Display]">Explore</h1>
+        <p className="text-sm text-stone-400">
+          Trending posts based on engagement
+        </p>
 
-        {explorePosts.map((post, i) => (
-          <PostCard key={i} {...post} />
-        ))}
+        <div className="border-t border-stone-800 pt-4">
+          {trendingPosts.length === 0 && loading ? (
+            <div className="space-y-4 animate-pulse">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="h-40 bg-stone-900 rounded" />
+              ))}
+            </div>
+          ) : (
+            <Virtuoso
+              data={trendingPosts}
+              style={{ height: "80vh" }}
+              endReached={fetchTrendingPosts}
+              itemContent={(_, post) => <PostCard post={post} />}
+              components={{
+                Footer: () => (
+                  <div className="py-6 text-center text-stone-500">
+                    {loading
+                      ? "Loading more…"
+                      : !trendingHasMore
+                      ? "🎉 All caught up!"
+                      : null}
+                  </div>
+                ),
+              }}
+            />
+          )}
+        </div>
       </div>
     </div>
   );

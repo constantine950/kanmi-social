@@ -3,49 +3,111 @@ import {
   createPostApi,
   deletePostApi,
   getPostsApi,
+  getTrendingPostsApi,
   toggleLikeApi,
   updatePostApi,
 } from "../api/postApi";
 import type { Post } from "../types";
 import { useAuthStore } from "./authStore";
+import { mergePosts } from "../utils/merge";
+import { shuffleArray } from "../utils/shuffle";
 
 interface PostStore {
-  posts: Post[];
+  feedPosts: Post[];
+  trendingPosts: Post[];
   loading: boolean;
+
+  // Feed
   page: number;
   hasMore: boolean;
   pageCache: Record<number, Post[]>;
 
-  // 🔒 locks
+  // Trending
+  trendingPage: number;
+  trendingHasMore: boolean;
+  trendingCache: Record<number, Post[]>;
+  trendingLoaded: boolean;
+
+  // Locks
   likingPosts: Set<string>;
   updatingPostId: string | null;
 
+  // Actions
   fetchPosts: () => Promise<void>;
+  fetchTrendingPosts: () => Promise<void>;
   createPost: (formData: FormData) => Promise<void>;
   toggleLike: (postId: string) => Promise<void>;
   updatePost: (postId: string, formData: FormData) => Promise<void>;
   deletePost: (postId: string) => Promise<void>;
+
   resetFeed: () => void;
+  resetTrending: () => void;
 }
 
 export const usePostStore = create<PostStore>((set, get) => ({
-  posts: [],
+  feedPosts: [],
+  trendingPosts: [],
   loading: false,
+
+  // Feed
   page: 1,
   hasMore: true,
   pageCache: {},
+
+  // Trending
+  trendingPage: 1,
+  trendingHasMore: true,
+  trendingCache: {},
+  trendingLoaded: false,
+
+  // Locks
   likingPosts: new Set(),
   updatingPostId: null,
 
-  // ✅ FETCH POSTS
   fetchPosts: async () => {
-    const { page, pageCache, hasMore, loading } = get();
-    if (!hasMore || loading) return;
+    const { page, loading, feedPosts } = get();
+    if (loading) return;
 
-    if (pageCache[page]) {
+    set({ loading: true });
+
+    try {
+      // Fetch next page
+      const posts = await getPostsApi(page);
+
+      let newFeedPosts = [...feedPosts, ...posts];
+
+      // If API returns empty, loop: reset page & shuffle existing posts
+      if (posts.length === 0) {
+        set({ page: 1 }); // reset page
+        newFeedPosts = shuffleArray(feedPosts); // shuffle for variety
+      } else {
+        set({ page: page + 1 }); // increment page normally
+      }
+
+      set({ feedPosts: newFeedPosts });
+    } finally {
+      set({ loading: false });
+    }
+  },
+
+  // =======================
+  // 🔥 FETCH TRENDING
+  // =======================
+  fetchTrendingPosts: async () => {
+    const {
+      trendingPage,
+      trendingCache,
+      trendingHasMore,
+      loading,
+      trendingPosts,
+    } = get();
+
+    if (!trendingHasMore || loading) return;
+
+    if (trendingCache[trendingPage]) {
       set((state) => ({
-        posts: [...state.posts, ...pageCache[page]],
-        page: state.page + 1,
+        trendingPosts: mergePosts(trendingPosts, trendingCache[trendingPage]),
+        trendingPage: state.trendingPage + 1,
       }));
       return;
     }
@@ -53,23 +115,26 @@ export const usePostStore = create<PostStore>((set, get) => ({
     set({ loading: true });
 
     try {
-      const posts = await getPostsApi(page);
+      const res = await getTrendingPostsApi(trendingPage);
 
       set((state) => ({
-        posts: [...state.posts, ...posts],
-        pageCache: {
-          ...state.pageCache,
-          [page]: posts,
+        trendingPosts: mergePosts(trendingPosts, res.data),
+        trendingCache: {
+          ...state.trendingCache,
+          [trendingPage]: res.data,
         },
-        page: state.page + 1,
-        hasMore: posts.length > 0,
+        trendingPage: state.trendingPage + 1,
+        trendingHasMore: res.hasMore,
+        trendingLoaded: true,
       }));
     } finally {
       set({ loading: false });
     }
   },
 
-  // ✅ CREATE POST
+  // =======================
+  // ✏️ CREATE POST
+  // =======================
   createPost: async (formData) => {
     const res = await createPostApi(formData);
 
@@ -86,23 +151,30 @@ export const usePostStore = create<PostStore>((set, get) => ({
     };
 
     set((state) => ({
-      posts: [newPost, ...state.posts],
+      feedPosts: [newPost, ...state.feedPosts],
+      trendingPosts: [newPost, ...state.trendingPosts],
       pageCache: {
         ...state.pageCache,
         1: [newPost, ...(state.pageCache[1] || [])],
       },
+      trendingCache: {
+        ...state.trendingCache,
+        1: [newPost, ...(state.trendingCache[1] || [])],
+      },
     }));
   },
 
+  // =======================
   // ❤️ TOGGLE LIKE
+  // =======================
   toggleLike: async (postId: string) => {
     const userId = useAuthStore.getState().user?.user_id;
     if (!userId) return;
 
-    const { likingPosts, posts } = get();
+    const { likingPosts, feedPosts, trendingPosts } = get();
     if (likingPosts.has(postId)) return;
 
-    const post = posts.find((p) => p._id === postId);
+    const post = [...feedPosts, ...trendingPosts].find((p) => p._id === postId);
     if (!post) return;
 
     const wasLiked = post.alreadyLiked;
@@ -116,8 +188,8 @@ export const usePostStore = create<PostStore>((set, get) => ({
     });
 
     // optimistic update
-    set((state) => ({
-      posts: state.posts.map((p) =>
+    const updatePosts = (posts: Post[]) =>
+      posts.map((p) =>
         p._id === postId
           ? {
               ...p,
@@ -127,14 +199,18 @@ export const usePostStore = create<PostStore>((set, get) => ({
                 : [...p.likes, userId],
             }
           : p
-      ),
+      );
+
+    set(() => ({
+      feedPosts: updatePosts(feedPosts),
+      trendingPosts: updatePosts(trendingPosts),
     }));
 
     try {
       const response = await toggleLikeApi(postId);
 
-      set((state) => ({
-        posts: state.posts.map((p) =>
+      const updatePostsResponse = (posts: Post[]) =>
+        posts.map((p) =>
           p._id === postId
             ? {
                 ...p,
@@ -142,23 +218,26 @@ export const usePostStore = create<PostStore>((set, get) => ({
                 likes: response.likes,
               }
             : p
-        ),
+        );
+
+      set(() => ({
+        feedPosts: updatePostsResponse(feedPosts),
+        trendingPosts: updatePostsResponse(trendingPosts),
       }));
     } catch {
       // rollback
-      set((state) => ({
-        posts: state.posts.map((p) =>
+      const rollbackPosts = (posts: Post[]) =>
+        posts.map((p) =>
           p._id === postId
-            ? {
-                ...p,
-                alreadyLiked: wasLiked,
-                likes: previousLikes,
-              }
+            ? { ...p, alreadyLiked: wasLiked, likes: previousLikes }
             : p
-        ),
+        );
+
+      set(() => ({
+        feedPosts: rollbackPosts(feedPosts),
+        trendingPosts: rollbackPosts(trendingPosts),
       }));
     } finally {
-      // unlock
       set((state) => {
         const next = new Set(state.likingPosts);
         next.delete(postId);
@@ -167,21 +246,41 @@ export const usePostStore = create<PostStore>((set, get) => ({
     }
   },
 
-  // ✏️ UPDATE POST (NEW)
+  // =======================
+  // ✏️ UPDATE POST
+  // =======================
   updatePost: async (postId, formData) => {
     if (get().updatingPostId === postId) return;
-
     set({ updatingPostId: postId });
 
     try {
       const res = await updatePostApi(postId, formData);
 
-      set((state) => ({
-        posts: state.posts.map((p) => (p._id === postId ? res.data : p)),
+      const updatePosts = (posts: Post[]) =>
+        posts.map((p) =>
+          p._id === postId
+            ? {
+                ...p,
+                ...res.data,
+                uploadedBy: p.uploadedBy,
+                alreadyLiked: p.alreadyLiked,
+              }
+            : p
+        );
+
+      set(() => ({
+        feedPosts: updatePosts(get().feedPosts),
+        trendingPosts: updatePosts(get().trendingPosts),
         pageCache: Object.fromEntries(
-          Object.entries(state.pageCache).map(([page, posts]) => [
+          Object.entries(get().pageCache).map(([page, posts]) => [
             page,
-            posts.map((p) => (p._id === postId ? res.data : p)),
+            updatePosts(posts),
+          ])
+        ),
+        trendingCache: Object.fromEntries(
+          Object.entries(get().trendingCache).map(([page, posts]) => [
+            page,
+            updatePosts(posts),
           ])
         ),
       }));
@@ -190,17 +289,29 @@ export const usePostStore = create<PostStore>((set, get) => ({
     }
   },
 
+  // =======================
   // 🗑️ DELETE POST
+  // =======================
   deletePost: async (postId: string) => {
     try {
       await deletePostApi(postId);
 
+      const filterPosts = (posts: Post[]) =>
+        posts.filter((p) => p._id !== postId);
+
       set((state) => ({
-        posts: state.posts.filter((p) => p._id !== postId),
+        feedPosts: filterPosts(state.feedPosts),
+        trendingPosts: filterPosts(state.trendingPosts),
         pageCache: Object.fromEntries(
           Object.entries(state.pageCache).map(([page, posts]) => [
             page,
-            posts.filter((p) => p._id !== postId),
+            filterPosts(posts),
+          ])
+        ),
+        trendingCache: Object.fromEntries(
+          Object.entries(state.trendingCache).map(([page, posts]) => [
+            page,
+            filterPosts(posts),
           ])
         ),
       }));
@@ -209,12 +320,26 @@ export const usePostStore = create<PostStore>((set, get) => ({
     }
   },
 
+  // =======================
+  // 🔄 RESET
+  // =======================
   resetFeed: () =>
     set({
-      posts: [],
+      feedPosts: [],
       page: 1,
       hasMore: true,
       pageCache: {},
+      likingPosts: new Set(),
+      updatingPostId: null,
+    }),
+
+  resetTrending: () =>
+    set({
+      trendingPosts: [],
+      trendingPage: 1,
+      trendingHasMore: true,
+      trendingCache: {},
+      trendingLoaded: false,
       likingPosts: new Set(),
       updatingPostId: null,
     }),

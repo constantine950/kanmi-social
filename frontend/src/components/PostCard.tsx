@@ -10,8 +10,10 @@ interface PostCardProps {
 }
 
 const PostCard = memo(function PostCard({ post }: PostCardProps) {
-  const storePost = usePostStore((s) =>
-    s.posts.find((p) => p._id === post._id)
+  const storePost = usePostStore(
+    (s) =>
+      s.feedPosts.find((p) => p._id === post._id) ||
+      s.trendingPosts.find((p) => p._id === post._id)
   );
 
   const toggleLike = usePostStore((s) => s.toggleLike);
@@ -27,7 +29,7 @@ const PostCard = memo(function PostCard({ post }: PostCardProps) {
 
   if (!storePost) return null;
 
-  const { text, image, uploadedBy, createdAt } = storePost;
+  const { text, image, uploadedBy, createdAt, likes, alreadyLiked } = storePost;
   const isOwner = currentUser?.user_id === uploadedBy._id;
 
   const startEdit = () => {
@@ -151,12 +153,10 @@ const PostCard = memo(function PostCard({ post }: PostCardProps) {
           >
             <Heart
               size={18}
-              className={
-                storePost.alreadyLiked ? "text-red-500" : "text-stone-400"
-              }
-              fill={storePost.alreadyLiked ? "red" : "none"}
+              className={alreadyLiked ? "text-red-500" : "text-stone-400"}
+              fill={alreadyLiked ? "red" : "none"}
             />
-            {storePost.likes.length}
+            {likes?.length || 0}
           </button>
 
           <button

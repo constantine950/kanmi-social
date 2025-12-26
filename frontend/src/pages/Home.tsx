@@ -1,4 +1,3 @@
-// src/pages/Home.tsx
 import { useEffect } from "react";
 import { Virtuoso } from "react-virtuoso";
 import { usePostStore } from "../zustand/postStore";
@@ -6,13 +5,13 @@ import CreatePost from "../components/CreatePost";
 import PostCard from "../components/PostCard";
 
 export default function Home() {
-  const { posts, fetchPosts, hasMore, loading } = usePostStore();
+  const { feedPosts, fetchPosts, loading } = usePostStore();
 
   useEffect(() => {
-    if (posts.length === 0) {
+    if (feedPosts.length === 0) {
       fetchPosts();
     }
-  }, [fetchPosts, posts.length]);
+  }, [fetchPosts, feedPosts.length]);
 
   return (
     <div className="min-h-screen bg-black text-stone-200 font-[Inter] pt-8">
@@ -27,21 +26,19 @@ export default function Home() {
         {/* FEED */}
         <div className="h-[calc(100vh-220px)]">
           <Virtuoso
-            data={posts}
+            data={feedPosts}
             endReached={() => {
-              if (hasMore && !loading) fetchPosts();
+              if (!loading) fetchPosts();
             }}
             itemContent={(index, post) => <PostCard post={post} />}
             overscan={300}
             components={{
               Footer: () =>
                 loading ? (
-                  <div className="py-6 text-center text-stone-500 text-sm">
-                    Loading more posts…
-                  </div>
-                ) : !hasMore ? (
-                  <div className="py-6 text-center text-stone-600 text-sm">
-                    You’re all caught up ✨
+                  <div className="space-y-4 animate-pulse">
+                    {[...Array(3)].map((_, i) => (
+                      <div key={i} className="h-40 bg-stone-900 rounded" />
+                    ))}
                   </div>
                 ) : null,
             }}
