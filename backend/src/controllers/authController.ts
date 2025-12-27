@@ -6,6 +6,7 @@ import AppError from "../utils/AppError.ts";
 import jwt from "jsonwebtoken";
 import { uploadBufferToCloudinary } from "../utils/cloudinaryHelper.ts";
 import { signAccessToken, signRefreshToken } from "../utils/token.ts";
+import BlacklistedToken from "../models/BlacklistedToken.ts";
 
 const registerUser = catchAsync(async (req, res, next) => {
   const { username, password } = req.body;
@@ -125,6 +126,20 @@ const refreshToken = catchAsync(async (req, res, next) => {
 });
 
 const logoutUser = catchAsync(async (req, res) => {
+  const authHeader = req.headers.authorization;
+
+  if (authHeader?.startsWith("Bearer ")) {
+    const token = authHeader.split(" ")[1];
+    const decoded = jwt.decode(token) as jwt.JwtPayload;
+
+    if (decoded?.exp) {
+      await BlacklistedToken.create({
+        token,
+        expiresAt: new Date(decoded.exp * 1000),
+      });
+    }
+  }
+
   res.clearCookie("refreshToken");
 
   res.status(200).json({

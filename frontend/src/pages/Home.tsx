@@ -3,6 +3,7 @@ import { Virtuoso } from "react-virtuoso";
 import { usePostStore } from "../zustand/postStore";
 import CreatePost from "../components/CreatePost";
 import PostCard from "../components/PostCard";
+import { Link } from "react-router";
 
 export default function Home() {
   const { feedPosts, fetchPosts, loading } = usePostStore();
@@ -30,7 +31,11 @@ export default function Home() {
             endReached={() => {
               if (!loading) fetchPosts();
             }}
-            itemContent={(_index, post) => <PostCard post={post} />}
+            itemContent={(_index, post) => (
+              <Link to={`/post/${post._id}`}>
+                <PostCard post={post} />
+              </Link>
+            )}
             overscan={300}
             components={{
               Footer: () =>

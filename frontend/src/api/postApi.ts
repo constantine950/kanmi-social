@@ -10,6 +10,11 @@ export const getPostsApi = async (page: number, limit = 5) => {
   return res.data.posts;
 };
 
+export async function getPostById(id: string) {
+  const res = await api.get(`/posts/${id}`);
+  return res.data.data;
+}
+
 export const getUserPosts = () => api.get("/posts/get-user-posts");
 
 export const getTrendingPostsApi = async (page = 1) => {

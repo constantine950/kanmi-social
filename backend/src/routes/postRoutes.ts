@@ -5,6 +5,7 @@ import {
   createPost,
   deletePost,
   getAllPosts,
+  getPostById,
   getPostsByUser,
   getTotalLikes,
   getTrendingPosts,
@@ -32,5 +33,6 @@ postRoutes.patch(
 postRoutes.patch("/:id/like", authMiddleware, togglePostLike);
 postRoutes.get("/:id/likes/count", authMiddleware, getTotalLikes);
 postRoutes.get("/trending", authMiddleware, getTrendingPosts);
+postRoutes.get("/:id", authMiddleware, getPostById);
 
 export default postRoutes;

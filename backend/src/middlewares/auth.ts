@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import BlacklistedToken from "../models/BlacklistedToken.ts";
 import {
   type CustomJwtPayload,
   type UserInfoReq,
@@ -7,12 +8,11 @@ import {
 import { type NextFunction, type Response } from "express";
 import AppError from "../utils/AppError.ts";
 
-const authMiddleware = (
+const authMiddleware = async (
   req: UserInfoReq,
   res: Response<UserRes>,
   next: NextFunction
 ) => {
-  // 🚫 Prevent caching for auth-protected routes
   res.setHeader(
     "Cache-Control",
     "no-store, no-cache, must-revalidate, proxy-revalidate"
@@ -28,6 +28,12 @@ const authMiddleware = (
   }
 
   const token = authHeader.split(" ")[1];
+
+  // 🔴 1️⃣ Check blacklist
+  const blacklisted = await BlacklistedToken.findOne({ token });
+  if (blacklisted) {
+    return next(new AppError("Access token invalidated", 401));
+  }
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_KEY!) as CustomJwtPayload;

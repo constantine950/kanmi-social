@@ -8,6 +8,9 @@ import {
 } from "../api/userApi";
 import ProfilePostCard from "../components/ProfilePostCard";
 import { getUserPosts } from "../api/postApi";
+import { useNavigate } from "react-router";
+import { useAuthStore } from "../zustand/authStore";
+import { useUIStore } from "../zustand/uiStore";
 
 export interface ProfilePicture {
   url: string;
@@ -37,22 +40,27 @@ export default function Profile() {
   const [loading, setLoading] = useState<boolean>(true);
   const [tab, setTab] = useState<"posts" | "settings">("posts");
 
+  const navigate = useNavigate();
+  const clearAuth = useAuthStore((s) => s.clearAuth);
+  const showToast = useUIStore((s) => s.showToast);
+
   // ---------------- FETCH PROFILE ----------------
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         const userRes = await getMe();
         const postsRes = await getUserPosts();
-
         setUser(userRes.data.data);
         setPosts(postsRes.data.data);
+      } catch (err) {
+        showToast("Failed to fetch profile", "error");
+        console.log(err);
       } finally {
         setLoading(false);
       }
     };
-
     fetchProfile();
-  }, []);
+  }, [showToast]);
 
   // ---------------- BIO (DUMMY) ----------------
   const [bio, setBio] = useState<string>("");
@@ -66,16 +74,21 @@ export default function Profile() {
     if (!user) return;
     setUser({ ...user, bio });
     setEditingBio(false);
+    showToast("Bio updated", "success");
   };
 
   // ---------------- UPDATE USERNAME ----------------
   const [newUsername, setNewUsername] = useState<string>("");
-
   const updateName = async () => {
     if (!user || !newUsername.trim()) return;
-    await updateUsername(newUsername);
-    setUser({ ...user, username: newUsername });
-    setNewUsername("");
+    try {
+      await updateUsername(newUsername);
+      setUser({ ...user, username: newUsername });
+      setNewUsername("");
+      showToast("Username updated", "success");
+    } catch {
+      showToast("Failed to update username", "error");
+    }
   };
 
   // ---------------- PROFILE PICTURE ----------------
@@ -90,19 +103,17 @@ export default function Profile() {
 
   const updatePic = async () => {
     if (!user || !file) return;
-
-    const fd = new FormData();
-    fd.append("profilePicture", file);
-
-    const res = await updateProfilePicture(fd);
-
-    setUser({
-      ...user,
-      profilePicture: res.data.data,
-    });
-
-    setFile(null);
-    setPreview(null);
+    try {
+      const fd = new FormData();
+      fd.append("profilePicture", file);
+      const res = await updateProfilePicture(fd);
+      setUser({ ...user, profilePicture: res.data.data });
+      setFile(null);
+      setPreview(null);
+      showToast("Profile picture updated", "success");
+    } catch {
+      showToast("Failed to update profile picture", "error");
+    }
   };
 
   // ---------------- PASSWORD ----------------
@@ -111,31 +122,43 @@ export default function Profile() {
 
   const changePassword = async () => {
     if (!oldPassword || !newPassword) return;
-    await updatePassword({ password: oldPassword, newPassword });
-    setOldPassword("");
-    setNewPassword("");
+    try {
+      await updatePassword({ password: oldPassword, newPassword });
+      setOldPassword("");
+      setNewPassword("");
+      showToast("Password changed", "success");
+    } catch {
+      showToast("Failed to change password", "error");
+    }
   };
 
   // ---------------- DELETE ACCOUNT ----------------
   const removeAccount = async () => {
     if (!confirm("This action cannot be undone.")) return;
-    await deleteUser();
+    try {
+      await deleteUser();
+      clearAuth();
+      showToast("Account deleted", "success");
+      navigate("/home", { replace: true });
+    } catch {
+      showToast("Failed to delete account", "error");
+    }
   };
 
   // ---------------- POST ACTIONS ----------------
   const handleEditPost = (post: Post) => {
-    // Dummy edit – backend later
     alert(`Edit post: ${post._id}`);
+    showToast("Post edit action triggered", "info");
   };
 
   const handleDeletePost = (postId: string) => {
     if (!confirm("Delete this post?")) return;
     setPosts((prev) => prev.filter((p) => p._id !== postId));
+    showToast("Post deleted", "success");
   };
 
   // ---------------- SKELETON ----------------
   if (loading) return <ProfileSkeleton />;
-
   if (!user) return null;
 
   return (

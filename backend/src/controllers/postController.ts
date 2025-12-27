@@ -310,6 +310,26 @@ const getTrendingPosts = catchAsync(async (req, res) => {
   });
 });
 
+const getPostById = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+
+  const post = await Post.findById(id)
+    .populate("uploadedBy", "username profilePicture")
+    .lean();
+
+  if (!post) {
+    return res.status(404).json({
+      success: false,
+      message: "Post not found",
+    });
+  }
+
+  res.status(200).json({
+    success: true,
+    data: post,
+  });
+});
+
 export {
   createPost,
   getAllPosts,
@@ -319,4 +339,5 @@ export {
   togglePostLike,
   getTotalLikes,
   getTrendingPosts,
+  getPostById,
 };
