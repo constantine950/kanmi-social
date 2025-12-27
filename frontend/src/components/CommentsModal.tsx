@@ -1,13 +1,7 @@
 import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getCommentsApi, addCommentApi } from "../api/commentApi";
-import type { Comment } from "../types";
-
-interface CommentsModalProps {
-  postId: string;
-  isOpen: boolean;
-  onClose: () => void;
-}
+import type { Comment, CommentsModalProps } from "../types";
 
 export default function CommentsModal({
   postId,

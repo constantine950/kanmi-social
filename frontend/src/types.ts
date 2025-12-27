@@ -62,3 +62,13 @@ export interface Comment {
     };
   };
 }
+
+export interface PostCardProps {
+  post: Post;
+}
+
+export interface CommentsModalProps {
+  postId: string;
+  isOpen: boolean;
+  onClose: () => void;
+}

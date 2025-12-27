@@ -3,14 +3,10 @@ import Footer from "../components/Footer";
 import { features, mockPosts } from "../mockData/data";
 import Feature from "../components/Feature";
 import MockPost from "../components/MockPost";
-import Font from "../components/Font";
 
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-black text-stone-200 font-[Inter] selection:bg-stone-800 selection:text-stone-200">
-      {/* FONT */}
-      <Font />
-
       <style>{`
         @keyframes noise {
           0%,100% { opacity: .12; }

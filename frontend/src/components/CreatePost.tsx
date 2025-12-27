@@ -9,7 +9,7 @@ export default function CreatePost() {
   const [preview, setPreview] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const isSubmitting = useRef(false); // 🔒 lock for double-click prevention
+  const isSubmitting = useRef(false);
 
   const createPost = usePostStore((s) => s.createPost);
   const loading = usePostStore((s) => s.loading);
@@ -29,7 +29,6 @@ export default function CreatePost() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 🚫 prevent double submit
     if (loading || isSubmitting.current) return;
     isSubmitting.current = true;
 
@@ -90,7 +89,6 @@ export default function CreatePost() {
 
       {/* Actions */}
       <div className="flex items-center justify-between">
-        {/* Hidden input */}
         <input
           ref={fileInputRef}
           type="file"
@@ -102,7 +100,6 @@ export default function CreatePost() {
           }}
         />
 
-        {/* Custom image button */}
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}

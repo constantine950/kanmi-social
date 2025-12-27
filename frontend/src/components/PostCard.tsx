@@ -1,13 +1,9 @@
 import { memo, useRef, useState } from "react";
 import { Heart, MessageCircle, Trash2, Pencil, X } from "lucide-react";
 import CommentsModal from "./CommentsModal";
-import type { Post } from "../types";
+import type { PostCardProps } from "../types";
 import { usePostStore } from "../zustand/postStore";
 import { useAuthStore } from "../zustand/authStore";
-
-interface PostCardProps {
-  post: Post;
-}
 
 const PostCard = memo(function PostCard({ post }: PostCardProps) {
   const storePost = usePostStore(
@@ -30,7 +26,7 @@ const PostCard = memo(function PostCard({ post }: PostCardProps) {
   if (!storePost) return null;
 
   const { text, image, uploadedBy, createdAt, likes, alreadyLiked } = storePost;
-  const isOwner = currentUser?.user_id === uploadedBy._id;
+  const isOwner = !!uploadedBy && currentUser?.user_id === uploadedBy._id;
 
   const startEdit = () => {
     setEditText(text);
@@ -65,15 +61,25 @@ const PostCard = memo(function PostCard({ post }: PostCardProps) {
         <div className="flex justify-between items-start">
           <div className="flex gap-3">
             <img
-              src={uploadedBy.profilePicture?.url || "/avatar.png"}
+              src={uploadedBy?.profilePicture?.url || "/avatar.png"}
               className="w-8 h-8 rounded-full"
             />
             <div>
               <p className="text-sm font-medium text-white">
-                {uploadedBy.username}
+                {uploadedBy?.username || "Unknown"}
               </p>
               <p className="text-xs text-stone-500">
-                {new Date(createdAt).toLocaleString()}
+                {new Date(createdAt).toLocaleDateString(undefined, {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                })}{" "}
+                at{" "}
+                {new Date(createdAt).toLocaleTimeString(undefined, {
+                  hour: "numeric",
+                  minute: "2-digit",
+                  hour12: true,
+                })}
               </p>
             </div>
           </div>

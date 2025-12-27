@@ -12,7 +12,6 @@ export default function Explore() {
     fetchTrendingPosts,
   } = usePostStore();
 
-  // Initial fetch
   useEffect(() => {
     if (!trendingLoaded) {
       fetchTrendingPosts();

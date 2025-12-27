@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
-import Font from "../components/Font";
 import { registerUser } from "../api/authApi";
 import { useUIStore } from "../zustand/uiStore";
 import { AxiosError } from "axios";
@@ -49,8 +48,6 @@ export default function Register() {
 
   return (
     <div className="min-h-screen bg-black text-stone-200 font-[Inter] flex items-center justify-center px-6">
-      <Font />
-
       <div className="max-w-md w-full space-y-8 p-8 border border-stone-800 bg-stone-950">
         <div className="space-y-1">
           <h1 className="text-3xl font-[Playfair_Display] text-white">

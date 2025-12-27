@@ -1,229 +1,300 @@
-import { useState, type ChangeEvent } from "react";
-import { useParams } from "react-router";
+import { useEffect, useState, type ChangeEvent } from "react";
+import {
+  getMe,
+  updateUsername,
+  updateProfilePicture,
+  updatePassword,
+  deleteUser,
+} from "../api/userApi";
+import ProfilePostCard from "../components/ProfilePostCard";
+import { getUserPosts } from "../api/postApi";
+
+export interface ProfilePicture {
+  url: string;
+  publicId: string;
+}
+
+export interface User {
+  _id: string;
+  username: string;
+  bio?: string;
+  profilePicture?: ProfilePicture;
+}
+
+export interface Post {
+  _id: string;
+  text?: string;
+  image?: {
+    url: string;
+  } | null;
+  uploadedBy: User;
+  createdAt: string;
+}
 
 export default function Profile() {
-  const { username } = useParams();
+  const [user, setUser] = useState<User | null>(null);
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [tab, setTab] = useState<"posts" | "settings">("posts");
 
-  // Mock profile data
-  const [profilePic, setProfilePic] = useState("/mock/default-profile.jpg");
-  const [currentUsername, setCurrentUsername] = useState(username || "");
-  const [bio, setBio] = useState(`Hi, I'm ${username}! Welcome to my profile.`);
+  // ---------------- FETCH PROFILE ----------------
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const userRes = await getMe();
+        const postsRes = await getUserPosts();
 
-  // Mock posts
-  const posts = [
-    "/cabin-001.jpg",
-    "/mock/post2.jpg",
-    "/mock/post3.jpg",
-    "/mock/post4.jpg",
-    "/mock/post5.jpg",
-    "/mock/post6.jpg",
-  ];
+        setUser(userRes.data.data);
+        setPosts(postsRes.data.data);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const [selectedPost, setSelectedPost] = useState<string | null>(null);
+    fetchProfile();
+  }, []);
 
-  // --- Status Messages ---
-  const [usernameMsg, setUsernameMsg] = useState<string | null>(null);
-  const [profilePicMsg, setProfilePicMsg] = useState<string | null>(null);
-  const [passwordMsg, setPasswordMsg] = useState<string | null>(null);
-  const [deleteMsg, setDeleteMsg] = useState<string | null>(null);
+  // ---------------- BIO (DUMMY) ----------------
+  const [bio, setBio] = useState<string>("");
+  const [editingBio, setEditingBio] = useState<boolean>(false);
 
-  // --- Update Username ---
-  const [newUsername, setNewUsername] = useState("");
-  const handleUpdateUsername = () => {
-    if (!newUsername.trim()) return;
-    // TODO: call your username endpoint here
-    setCurrentUsername(newUsername);
-    setUsernameMsg("Username updated successfully!");
+  useEffect(() => {
+    if (user) setBio(user.bio || "");
+  }, [user]);
+
+  const saveBio = () => {
+    if (!user) return;
+    setUser({ ...user, bio });
+    setEditingBio(false);
+  };
+
+  // ---------------- UPDATE USERNAME ----------------
+  const [newUsername, setNewUsername] = useState<string>("");
+
+  const updateName = async () => {
+    if (!user || !newUsername.trim()) return;
+    await updateUsername(newUsername);
+    setUser({ ...user, username: newUsername });
     setNewUsername("");
-    setTimeout(() => setUsernameMsg(null), 3000);
   };
 
-  // --- Update Profile Picture ---
-  const [newProfilePicFile, setNewProfilePicFile] = useState<File | null>(null);
-  const [previewPic, setPreviewPic] = useState<string | null>(null);
+  // ---------------- PROFILE PICTURE ----------------
+  const [file, setFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
 
-  const handleProfilePicChange = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setNewProfilePicFile(e.target.files[0]);
-      setPreviewPic(URL.createObjectURL(e.target.files[0]));
-    }
+  const onPicChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    setFile(e.target.files[0]);
+    setPreview(URL.createObjectURL(e.target.files[0]));
   };
 
-  const handleUpdateProfilePic = () => {
-    if (!previewPic) return;
-    // TODO: call your profile picture endpoint here
-    setProfilePic(previewPic);
-    setProfilePicMsg("Profile picture updated successfully!");
-    setPreviewPic(null);
-    setNewProfilePicFile(null);
-    setTimeout(() => setProfilePicMsg(null), 3000);
+  const updatePic = async () => {
+    if (!user || !file) return;
+
+    const fd = new FormData();
+    fd.append("profilePicture", file);
+
+    const res = await updateProfilePicture(fd);
+
+    setUser({
+      ...user,
+      profilePicture: res.data.data,
+    });
+
+    setFile(null);
+    setPreview(null);
   };
 
-  // --- Update Password ---
-  const [oldPassword, setOldPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
+  // ---------------- PASSWORD ----------------
+  const [oldPassword, setOldPassword] = useState<string>("");
+  const [newPassword, setNewPassword] = useState<string>("");
 
-  const handleUpdatePassword = () => {
+  const changePassword = async () => {
     if (!oldPassword || !newPassword) return;
-    // TODO: call your password endpoint here
-    setPasswordMsg("Password updated successfully!");
+    await updatePassword({ password: oldPassword, newPassword });
     setOldPassword("");
     setNewPassword("");
-    setTimeout(() => setPasswordMsg(null), 3000);
   };
 
-  // --- Delete Account ---
-  const handleDeleteAccount = () => {
-    if (
-      confirm(
-        "Are you sure you want to delete your account? This cannot be undone."
-      )
-    ) {
-      // TODO: call your delete account endpoint here
-      setDeleteMsg("Account deleted successfully!");
-    }
+  // ---------------- DELETE ACCOUNT ----------------
+  const removeAccount = async () => {
+    if (!confirm("This action cannot be undone.")) return;
+    await deleteUser();
   };
+
+  // ---------------- POST ACTIONS ----------------
+  const handleEditPost = (post: Post) => {
+    // Dummy edit – backend later
+    alert(`Edit post: ${post._id}`);
+  };
+
+  const handleDeletePost = (postId: string) => {
+    if (!confirm("Delete this post?")) return;
+    setPosts((prev) => prev.filter((p) => p._id !== postId));
+  };
+
+  // ---------------- SKELETON ----------------
+  if (loading) return <ProfileSkeleton />;
+
+  if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-black text-stone-200 font-[Inter] px-6 md:px-14 pt-8 pb-8">
-      {/* Profile header */}
-      <div className="flex items-center gap-4 mb-6">
+    <div className="min-h-screen bg-black text-stone-200 px-6 md:px-14 pt-10 font-[Inter]">
+      {/* ---------- HEADER ---------- */}
+      <div className="flex items-start gap-5 mb-10">
         <img
-          src={profilePic}
-          alt={currentUsername}
-          className="w-20 h-20 md:w-24 md:h-24 rounded-full border border-stone-700 object-cover"
+          src={user.profilePicture?.url || "/default-avatar.png"}
+          className="w-24 h-24 rounded-full object-cover border border-stone-700"
         />
-        <div>
-          <h1 className="text-2xl md:text-3xl font-[Playfair_Display]">
-            {currentUsername}
-          </h1>
-          <p className="text-sm text-stone-400 mt-1 max-w-md">{bio}</p>
+
+        <div className="flex-1">
+          <h1 className="text-3xl font-[Playfair_Display]">{user.username}</h1>
+
+          {!editingBio ? (
+            <p
+              className="text-sm text-stone-400 mt-2 cursor-pointer"
+              onClick={() => setEditingBio(true)}
+            >
+              {bio || "Click to add bio"}
+            </p>
+          ) : (
+            <div className="mt-2 space-y-2">
+              <textarea
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+                className="w-full bg-stone-900 border border-stone-800 p-2 text-sm"
+              />
+              <button
+                onClick={saveBio}
+                className="text-xs px-3 py-1 bg-white text-black"
+              >
+                Save
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Posts grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-8">
-        {posts.map((postUrl, i) => (
-          <div
-            key={i}
-            className="border border-stone-800 bg-stone-950 h-32 overflow-hidden relative group cursor-pointer"
-            onClick={() => setSelectedPost(postUrl)}
+      {/* ---------- TABS ---------- */}
+      <div className="flex gap-8 border-b border-stone-800 mb-8 text-sm">
+        {(["posts", "settings"] as const).map((t) => (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={`pb-3 ${
+              tab === t
+                ? "border-b-2 border-white text-white"
+                : "text-stone-400"
+            }`}
           >
-            <img
-              src={postUrl}
-              alt={`Post ${i + 1}`}
-              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-            />
-            <div className="absolute inset-0 bg-black bg-opacity-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center text-white font-semibold">
-              Post #{i + 1}
-            </div>
-          </div>
+            {t.toUpperCase()}
+          </button>
         ))}
       </div>
 
-      {/* --- Update Username --- */}
-      <div className="border border-stone-800 bg-stone-950 p-6 mb-6 space-y-4">
-        <h2 className="text-lg font-semibold mb-2">Update Username</h2>
-        <input
-          type="text"
-          placeholder="New username"
-          value={newUsername}
-          onChange={(e) => setNewUsername(e.target.value)}
-          className="w-full px-3 py-2 bg-stone-900 border border-stone-800 text-sm text-stone-200"
-        />
-        <button
-          onClick={handleUpdateUsername}
-          className="px-4 py-2 bg-white text-black text-sm font-medium hover:bg-stone-300 border border-stone-800"
-        >
-          Update Username
-        </button>
-        {usernameMsg && <p className="text-sm text-green-500">{usernameMsg}</p>}
-      </div>
-
-      {/* --- Update Profile Picture --- */}
-      <div className="border border-stone-800 bg-stone-950 p-6 mb-6 space-y-4">
-        <h2 className="text-lg font-semibold mb-2">Update Profile Picture</h2>
-        <div className="flex items-center gap-4">
-          {previewPic && (
-            <img
-              src={previewPic}
-              alt="Preview"
-              className="w-16 h-16 object-cover rounded-full border border-stone-700"
-            />
+      {/* ---------- POSTS (PostCards) ---------- */}
+      {tab === "posts" && (
+        <div className="space-y-4 max-w-2xl">
+          {posts.length === 0 && (
+            <p className="text-stone-500 text-sm">No posts yet</p>
           )}
-          <label className="px-3 py-2 border border-stone-800 bg-stone-900 text-sm cursor-pointer hover:bg-stone-800">
-            Upload new profile picture
-            <input
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleProfilePicChange}
+
+          {posts.map((post) => (
+            <ProfilePostCard
+              key={post._id}
+              post={post}
+              onEdit={handleEditPost}
+              onDelete={handleDeletePost}
             />
-          </label>
-        </div>
-        <button
-          onClick={handleUpdateProfilePic}
-          className="px-4 py-2 bg-white text-black text-sm font-medium hover:bg-stone-300 border border-stone-800"
-        >
-          Update Profile Picture
-        </button>
-        {profilePicMsg && (
-          <p className="text-sm text-green-500">{profilePicMsg}</p>
-        )}
-      </div>
-
-      {/* --- Update Password --- */}
-      <div className="border border-stone-800 bg-stone-950 p-6 mb-6 space-y-4">
-        <h2 className="text-lg font-semibold mb-2">Update Password</h2>
-        <input
-          type="password"
-          placeholder="Old password"
-          value={oldPassword}
-          onChange={(e) => setOldPassword(e.target.value)}
-          className="w-full px-3 py-2 bg-stone-900 border border-stone-800 text-sm text-stone-200"
-        />
-        <input
-          type="password"
-          placeholder="New password"
-          value={newPassword}
-          onChange={(e) => setNewPassword(e.target.value)}
-          className="w-full px-3 py-2 bg-stone-900 border border-stone-800 text-sm text-stone-200"
-        />
-        <button
-          onClick={handleUpdatePassword}
-          className="px-4 py-2 bg-white text-black text-sm font-medium hover:bg-stone-300 border border-stone-800"
-        >
-          Update Password
-        </button>
-        {passwordMsg && <p className="text-sm text-green-500">{passwordMsg}</p>}
-      </div>
-
-      {/* --- Delete Account --- */}
-      <div className="border border-stone-800 bg-red-950 p-6">
-        <button
-          onClick={handleDeleteAccount}
-          className="px-4 py-2 bg-red-600 text-white text-sm font-medium hover:bg-red-500 border border-stone-800 w-full"
-        >
-          Delete Account
-        </button>
-        {deleteMsg && (
-          <p className="text-sm text-green-500 mt-2">{deleteMsg}</p>
-        )}
-      </div>
-
-      {/* --- Post Modal --- */}
-      {selectedPost && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50"
-          onClick={() => setSelectedPost(null)}
-        >
-          <img
-            src={selectedPost}
-            alt="Selected post"
-            className="max-h-[80%] max-w-[80%] object-contain"
-          />
+          ))}
         </div>
       )}
+
+      {/* ---------- SETTINGS ---------- */}
+      {tab === "settings" && (
+        <div className="max-w-md space-y-8">
+          <section>
+            <h3 className="text-sm mb-2">Change Username</h3>
+            <input
+              value={newUsername}
+              onChange={(e) => setNewUsername(e.target.value)}
+              className="w-full bg-stone-900 border border-stone-800 px-3 py-2 text-sm"
+            />
+            <button
+              onClick={updateName}
+              className="mt-3 px-4 py-2 bg-white text-black text-sm"
+            >
+              Update
+            </button>
+          </section>
+
+          <section>
+            <h3 className="text-sm mb-2">Profile Picture</h3>
+            {preview && (
+              <img src={preview} className="w-16 h-16 rounded-full mb-2" />
+            )}
+            <input type="file" onChange={onPicChange} />
+            <button
+              onClick={updatePic}
+              className="mt-3 px-4 py-2 bg-white text-black text-sm"
+            >
+              Upload
+            </button>
+          </section>
+
+          <section>
+            <h3 className="text-sm mb-2">Change Password</h3>
+            <input
+              type="password"
+              placeholder="Old password"
+              value={oldPassword}
+              onChange={(e) => setOldPassword(e.target.value)}
+              className="w-full bg-stone-900 border border-stone-800 px-3 py-2 text-sm mb-2"
+            />
+            <input
+              type="password"
+              placeholder="New password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              className="w-full bg-stone-900 border border-stone-800 px-3 py-2 text-sm"
+            />
+            <button
+              onClick={changePassword}
+              className="mt-3 px-4 py-2 bg-white text-black text-sm"
+            >
+              Update Password
+            </button>
+          </section>
+
+          <button
+            onClick={removeAccount}
+            className="w-full py-2 bg-red-600 text-white text-sm"
+          >
+            Delete Account
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ================== SKELETON ================== */
+function ProfileSkeleton() {
+  return (
+    <div className="min-h-screen bg-black px-6 md:px-14 pt-10 animate-pulse">
+      <div className="flex items-center gap-5 mb-10">
+        <div className="w-24 h-24 bg-stone-800 rounded-full" />
+        <div className="space-y-3">
+          <div className="w-48 h-6 bg-stone-800" />
+          <div className="w-64 h-4 bg-stone-800" />
+        </div>
+      </div>
+
+      <div className="space-y-4 max-w-2xl">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="h-32 bg-stone-800" />
+        ))}
+      </div>
     </div>
   );
 }

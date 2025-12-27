@@ -10,6 +10,8 @@ export const getPostsApi = async (page: number, limit = 5) => {
   return res.data.posts;
 };
 
+export const getUserPosts = () => api.get("/posts/get-user-posts");
+
 export const getTrendingPostsApi = async (page = 1) => {
   const res = await api.get(`/posts/trending?page=${page}&limit=5`);
   return res.data;

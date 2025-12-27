@@ -30,7 +30,7 @@ export default function Home() {
             endReached={() => {
               if (!loading) fetchPosts();
             }}
-            itemContent={(index, post) => <PostCard post={post} />}
+            itemContent={(_index, post) => <PostCard post={post} />}
             overscan={300}
             components={{
               Footer: () =>

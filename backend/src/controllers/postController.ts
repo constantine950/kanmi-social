@@ -242,6 +242,18 @@ const getTrendingPosts = catchAsync(async (req, res) => {
   const skip = (page - 1) * limit;
 
   const trending = await Post.aggregate([
+    // 👤 populate user
+    {
+      $lookup: {
+        from: "users",
+        localField: "uploadedBy",
+        foreignField: "_id",
+        as: "uploadedBy",
+      },
+    },
+    { $unwind: "$uploadedBy" },
+
+    // 💬 lookup comments (YOU WERE MISSING THIS)
     {
       $lookup: {
         from: "comments",
@@ -250,22 +262,35 @@ const getTrendingPosts = catchAsync(async (req, res) => {
         as: "comments",
       },
     },
+
+    // 🔥 derived fields
     {
       $addFields: {
         alreadyLiked: {
-          $in: [new mongoose.Types.ObjectId(userId), "$likes"],
+          $in: [
+            new mongoose.Types.ObjectId(userId),
+            { $ifNull: ["$likes", []] },
+          ],
         },
         score: {
           $add: [
-            { $size: "$likes" },
-            { $multiply: [{ $size: "$comments" }, 2] },
+            { $size: { $ifNull: ["$likes", []] } },
+            {
+              $multiply: [{ $size: { $ifNull: ["$comments", []] } }, 2],
+            },
           ],
         },
       },
     },
+
+    // 📊 ranking
     { $sort: { score: -1, createdAt: -1 } },
+
+    // 📄 pagination
     { $skip: skip },
     { $limit: limit },
+
+    // 🎯 final shape
     {
       $project: {
         text: 1,
