@@ -6,7 +6,6 @@ import catchAsync from "../utils/catchAsync.ts";
 import { uploadBufferToCloudinary } from "../utils/cloudinaryHelper.ts";
 import Notification from "../models/Notification.ts";
 import { getIO, onlineUsers } from "../socket.ts";
-import Comment from "../models/Comment.ts";
 
 const createPost = catchAsync(async (req, res, next) => {
   const { text } = req.body;
@@ -222,20 +221,6 @@ const togglePostLike = catchAsync(async (req, res, next) => {
   });
 });
 
-const getTotalLikes = catchAsync(async (req, res, next) => {
-  const postId = req.params.id;
-
-  const result = await Post.aggregate([
-    { $match: { _id: new mongoose.Types.ObjectId(postId) } },
-    { $project: { totalLikes: { $size: "$likes" } } },
-  ]);
-
-  res.status(200).json({
-    success: true,
-    data: result,
-  });
-});
-
 const getTrendingPosts = catchAsync(async (req, res) => {
   const userId = req.userInfo!.user_id;
   const page = Number(req.query.page) || 1;
@@ -243,7 +228,6 @@ const getTrendingPosts = catchAsync(async (req, res) => {
   const skip = (page - 1) * limit;
 
   const trending = await Post.aggregate([
-    // 👤 populate user
     {
       $lookup: {
         from: "users",
@@ -254,7 +238,6 @@ const getTrendingPosts = catchAsync(async (req, res) => {
     },
     { $unwind: "$uploadedBy" },
 
-    // 💬 lookup comments (YOU WERE MISSING THIS)
     {
       $lookup: {
         from: "comments",
@@ -264,7 +247,6 @@ const getTrendingPosts = catchAsync(async (req, res) => {
       },
     },
 
-    // 🔥 derived fields
     {
       $addFields: {
         alreadyLiked: {
@@ -284,14 +266,11 @@ const getTrendingPosts = catchAsync(async (req, res) => {
       },
     },
 
-    // 📊 ranking
     { $sort: { score: -1, createdAt: -1 } },
 
-    // 📄 pagination
     { $skip: skip },
     { $limit: limit },
 
-    // 🎯 final shape
     {
       $project: {
         text: 1,
@@ -311,33 +290,6 @@ const getTrendingPosts = catchAsync(async (req, res) => {
   });
 });
 
-const getPostById = catchAsync(async (req, res, next) => {
-  const { id } = req.params;
-
-  const post = await Post.findById(id)
-    .populate("uploadedBy", "username profilePicture")
-    .lean();
-
-  if (!post) {
-    return res.status(404).json({
-      success: false,
-      message: "Post not found",
-    });
-  }
-
-  const comments = await Comment.find({ id })
-    .populate("userId", "username profilePicture")
-    .sort({ createdAt: -1 });
-
-  res.status(200).json({
-    success: true,
-    data: {
-      post,
-      comments,
-    },
-  });
-});
-
 export {
   createPost,
   getAllPosts,
@@ -345,7 +297,5 @@ export {
   deletePost,
   updatePost,
   togglePostLike,
-  getTotalLikes,
   getTrendingPosts,
-  getPostById,
 };

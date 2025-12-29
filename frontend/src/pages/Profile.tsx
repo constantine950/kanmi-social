@@ -5,6 +5,7 @@ import {
   updateProfilePicture,
   updatePassword,
   deleteUser,
+  updateBio,
 } from "../api/userApi";
 import ProfilePostCard from "../components/ProfilePostCard";
 import { getUserPosts } from "../api/postApi";
@@ -20,7 +21,7 @@ export interface ProfilePicture {
 export interface User {
   _id: string;
   username: string;
-  bio?: string;
+  bio: string;
   profilePicture?: ProfilePicture;
 }
 
@@ -51,7 +52,7 @@ export default function Profile() {
       try {
         const userRes = await getMe();
         const postsRes = await getUserPosts();
-        console.log(postsRes.data.data);
+
         setUser(userRes.data.data);
         setPosts(postsRes.data.data);
       } catch (err) {
@@ -64,7 +65,7 @@ export default function Profile() {
     fetchProfile();
   }, [showToast]);
 
-  // ---------------- BIO (DUMMY) ----------------
+  // ---------------- BIO ----------------
   const [bio, setBio] = useState<string>("");
   const [editingBio, setEditingBio] = useState<boolean>(false);
 
@@ -72,11 +73,16 @@ export default function Profile() {
     if (user) setBio(user.bio || "");
   }, [user]);
 
-  const saveBio = () => {
+  const saveBio = async () => {
     if (!user) return;
-    setUser({ ...user, bio });
-    setEditingBio(false);
-    showToast("Bio updated", "success");
+    try {
+      await updateBio(bio);
+      setUser({ ...user, bio: bio });
+      setEditingBio(false);
+      showToast("Bio updated", "success");
+    } catch {
+      showToast("Failed to update bio", "error");
+    }
   };
 
   // ---------------- UPDATE USERNAME ----------------
@@ -177,12 +183,20 @@ export default function Profile() {
                 onChange={(e) => setBio(e.target.value)}
                 className="w-full bg-stone-900 border border-stone-800 p-2 text-sm"
               />
-              <button
-                onClick={saveBio}
-                className="text-xs px-3 py-1 bg-white text-black"
-              >
-                Save
-              </button>
+              <div className="flex space-x-1.5">
+                <button
+                  onClick={saveBio}
+                  className="text-xs px-3 py-1 bg-white text-black"
+                >
+                  Save
+                </button>
+                <button
+                  onClick={() => setEditingBio(false)}
+                  className="text-xs px-3 py-1 bg-white text-black"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           )}
         </div>

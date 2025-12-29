@@ -4,6 +4,7 @@ import { Document, Types } from "mongoose";
 
 export interface CustomProperty extends Document {
   username?: string;
+  bio?: string;
   password?: string;
   profilePicture?: {
     url: string;
@@ -45,6 +46,7 @@ export interface UserInfoReq extends Request {
   body: {
     username: string;
     password: string;
+    bio: string;
     newPassword: string;
     text: string;
     receiver: Types.ObjectId;

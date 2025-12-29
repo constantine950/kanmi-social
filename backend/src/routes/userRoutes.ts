@@ -3,6 +3,7 @@ import authMiddleware from "../middlewares/auth.ts";
 import {
   deleteUser,
   getSingleUser,
+  updateBio,
   updatePassword,
   updateProfilePicture,
   updateUsername,
@@ -13,6 +14,7 @@ const userRoutes = express.Router();
 
 userRoutes.get("/me", authMiddleware, getSingleUser);
 userRoutes.patch("/update-username", authMiddleware, updateUsername);
+userRoutes.patch("/update-bio", authMiddleware, updateBio);
 userRoutes.patch("/update-password", authMiddleware, updatePassword);
 userRoutes.patch(
   "/update-profile-picture",

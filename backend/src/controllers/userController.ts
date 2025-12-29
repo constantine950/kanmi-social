@@ -43,6 +43,26 @@ const updateUsername = catchAsync(async (req, res, next) => {
   });
 });
 
+const updateBio = catchAsync(async (req, res, next) => {
+  const { bio } = req.body;
+  const userId = req.userInfo?.user_id;
+
+  const updatedUserBio = await User.findByIdAndUpdate(
+    userId,
+    { bio },
+    { new: true, runValidators: true }
+  );
+
+  if (!updatedUserBio) {
+    return next(new AppError("Not able to update bio", 404));
+  }
+
+  res.status(200).json({
+    success: true,
+    data: updatedUserBio,
+  });
+});
+
 const updatePassword = catchAsync(async (req, res, next) => {
   const { password: oldPassword, newPassword } = req.body;
   const userId = req.userInfo?.user_id;
@@ -60,7 +80,7 @@ const updatePassword = catchAsync(async (req, res, next) => {
   const isPassword = await bcrypt.compare(oldPassword, user.password!);
 
   if (!isPassword) {
-    return next(new AppError("old or new password", 400));
+    return next(new AppError("Wrong password", 400));
   }
 
   const salt = await bcrypt.genSalt();
@@ -173,6 +193,7 @@ const deleteUser = catchAsync(async (req, res, next) => {
 export {
   getSingleUser,
   updateUsername,
+  updateBio,
   updatePassword,
   updateProfilePicture,
   deleteUser,

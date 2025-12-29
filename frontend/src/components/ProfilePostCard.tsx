@@ -48,7 +48,7 @@ export default function ProfilePostCard({ post }: ProfilePostCardProps) {
 
         {/* LIKES */}
         <div className="flex items-center gap-1 text-xs text-stone-400">
-          <Heart size={14} className="stroke-stone-400" />
+          <Heart fill="red" size={14} className="stroke-stone-400" />
           <span>{likesCount}</span>
         </div>
       </div>

@@ -5,6 +5,9 @@ export const getMe = () => api.get("/users/me");
 export const updateUsername = (username: string) =>
   api.patch("/users/update-username", { username });
 
+export const updateBio = (bio: string) =>
+  api.patch("/users/update-bio", { bio });
+
 export const updatePassword = (data: {
   password: string;
   newPassword: string;
