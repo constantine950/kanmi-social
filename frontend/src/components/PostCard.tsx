@@ -159,7 +159,11 @@ const PostCard = memo(function PostCard({ post }: PostCardProps) {
           >
             <Heart
               size={18}
-              className={alreadyLiked ? "text-red-500" : "text-stone-400"}
+              className={
+                alreadyLiked
+                  ? "text-red-500 cursor-pointer"
+                  : "text-stone-400 cursor-pointer"
+              }
               fill={alreadyLiked ? "red" : "none"}
             />
             {likes?.length || 0}
@@ -167,7 +171,7 @@ const PostCard = memo(function PostCard({ post }: PostCardProps) {
 
           <button
             onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-1"
+            className="flex items-center gap-1 cursor-pointer"
           >
             <MessageCircle size={18} />
           </button>

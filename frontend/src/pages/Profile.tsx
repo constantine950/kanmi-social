@@ -27,6 +27,7 @@ export interface User {
 export interface Post {
   _id: string;
   text?: string;
+  likes?: [];
   image?: {
     url: string;
   } | null;
@@ -50,6 +51,7 @@ export default function Profile() {
       try {
         const userRes = await getMe();
         const postsRes = await getUserPosts();
+        console.log(postsRes.data.data);
         setUser(userRes.data.data);
         setPosts(postsRes.data.data);
       } catch (err) {
@@ -145,18 +147,6 @@ export default function Profile() {
     }
   };
 
-  // ---------------- POST ACTIONS ----------------
-  const handleEditPost = (post: Post) => {
-    alert(`Edit post: ${post._id}`);
-    showToast("Post edit action triggered", "info");
-  };
-
-  const handleDeletePost = (postId: string) => {
-    if (!confirm("Delete this post?")) return;
-    setPosts((prev) => prev.filter((p) => p._id !== postId));
-    showToast("Post deleted", "success");
-  };
-
   // ---------------- SKELETON ----------------
   if (loading) return <ProfileSkeleton />;
   if (!user) return null;
@@ -223,12 +213,7 @@ export default function Profile() {
           )}
 
           {posts.map((post) => (
-            <ProfilePostCard
-              key={post._id}
-              post={post}
-              onEdit={handleEditPost}
-              onDelete={handleDeletePost}
-            />
+            <ProfilePostCard key={post._id} post={post} />
           ))}
         </div>
       )}

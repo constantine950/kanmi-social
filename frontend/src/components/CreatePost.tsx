@@ -103,7 +103,7 @@ export default function CreatePost() {
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          className="flex items-center gap-2 text-xs text-stone-400 hover:text-white"
+          className="flex cursor-pointer items-center gap-2 text-xs text-stone-400 hover:text-white"
         >
           <Image size={16} />
           {image ? "Change image" : "Add image"}
@@ -112,7 +112,7 @@ export default function CreatePost() {
         <button
           type="submit"
           disabled={loading}
-          className="px-4 py-1 text-xs bg-white text-black disabled:opacity-50"
+          className="px-4 py-1 cursor-pointer text-xs bg-white text-black disabled:opacity-50"
         >
           {loading ? "Posting..." : "Post"}
         </button>

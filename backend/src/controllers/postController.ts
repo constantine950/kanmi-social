@@ -6,6 +6,7 @@ import catchAsync from "../utils/catchAsync.ts";
 import { uploadBufferToCloudinary } from "../utils/cloudinaryHelper.ts";
 import Notification from "../models/Notification.ts";
 import { getIO, onlineUsers } from "../socket.ts";
+import Comment from "../models/Comment.ts";
 
 const createPost = catchAsync(async (req, res, next) => {
   const { text } = req.body;
@@ -324,9 +325,16 @@ const getPostById = catchAsync(async (req, res, next) => {
     });
   }
 
+  const comments = await Comment.find({ id })
+    .populate("userId", "username profilePicture")
+    .sort({ createdAt: -1 });
+
   res.status(200).json({
     success: true,
-    data: post,
+    data: {
+      post,
+      comments,
+    },
   });
 });
 

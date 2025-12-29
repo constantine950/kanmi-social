@@ -1,43 +1,32 @@
-export interface Post {
-  _id: string;
-  text?: string;
-  image?: {
-    url: string;
-  } | null;
-  uploadedBy: User;
-  createdAt: string;
-  updatedAt?: string;
-}
-
-export interface ProfilePicture {
-  url: string;
-  publicId: string;
-}
-
-export interface User {
-  _id: string;
-  username: string;
-  bio?: string;
-  profilePicture?: ProfilePicture;
-}
+import { Heart } from "lucide-react";
+import type { User } from "../types";
 
 interface ProfilePostCardProps {
-  post: Post;
-  onEdit: (post: Post) => void;
-  onDelete: (postId: string) => void;
+  post: {
+    _id: string;
+    text?: string;
+    likes?: [];
+    image?: {
+      url: string;
+    } | null;
+    uploadedBy: User;
+    createdAt: string;
+  };
 }
 
-export default function ProfilePostCard({
-  post,
-  onEdit,
-  onDelete,
-}: ProfilePostCardProps) {
+export default function ProfilePostCard({ post }: ProfilePostCardProps) {
+  const likesCount = Array.isArray(post.likes) ? post.likes.length : 0;
+
   return (
     <div className="border border-stone-800 bg-stone-950 p-4 rounded-md">
-      {/* POST CONTENT */}
-      <p className="text-sm text-stone-200 whitespace-pre-wrap">{post.text}</p>
+      {/* POST TEXT */}
+      {post.text && (
+        <p className="text-sm text-stone-200 whitespace-pre-wrap">
+          {post.text}
+        </p>
+      )}
 
-      {/* OPTIONAL IMAGE */}
+      {/* POST IMAGE */}
       {post.image?.url && (
         <img
           src={post.image.url}
@@ -47,7 +36,8 @@ export default function ProfilePostCard({
       )}
 
       {/* META */}
-      <div className="flex items-center justify-between mt-3">
+      <div className="flex items-center justify-between mt-4">
+        {/* DATE */}
         <p className="text-xs text-stone-500">
           {new Date(post.createdAt).toLocaleDateString(undefined, {
             year: "numeric",
@@ -56,21 +46,10 @@ export default function ProfilePostCard({
           })}
         </p>
 
-        {/* ACTIONS */}
-        <div className="flex gap-4 text-xs">
-          <button
-            onClick={() => onEdit(post)}
-            className="text-blue-400 hover:underline"
-          >
-            Edit
-          </button>
-
-          <button
-            onClick={() => onDelete(post._id)}
-            className="text-red-400 hover:underline"
-          >
-            Delete
-          </button>
+        {/* LIKES */}
+        <div className="flex items-center gap-1 text-xs text-stone-400">
+          <Heart size={14} className="stroke-stone-400" />
+          <span>{likesCount}</span>
         </div>
       </div>
     </div>
