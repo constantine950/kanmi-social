@@ -21,7 +21,7 @@ export default function Register() {
       const formData = new FormData();
       formData.append("username", username);
       formData.append("password", password);
-      if (file) formData.append("file", file);
+      if (file) formData.append("image", file);
 
       const res = await registerUser(formData);
 

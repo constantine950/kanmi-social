@@ -8,6 +8,7 @@ const UserSchema = new Schema<CustomProperty>(
       required: true,
       unique: true,
       trim: true,
+      lowercase: true,
     },
     bio: {
       type: String,

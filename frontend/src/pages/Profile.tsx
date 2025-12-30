@@ -89,13 +89,17 @@ export default function Profile() {
   const [newUsername, setNewUsername] = useState<string>("");
   const updateName = async () => {
     if (!user || !newUsername.trim()) return;
+
+    setLoading(true);
     try {
       await updateUsername(newUsername);
-      setUser({ ...user, username: newUsername });
+      setUser({ ...user, username: newUsername.toLocaleLowerCase() });
       setNewUsername("");
       showToast("Username updated", "success");
     } catch {
       showToast("Failed to update username", "error");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -111,6 +115,7 @@ export default function Profile() {
 
   const updatePic = async () => {
     if (!user || !file) return;
+    setLoading(true);
     try {
       const fd = new FormData();
       fd.append("profilePicture", file);
@@ -121,6 +126,8 @@ export default function Profile() {
       showToast("Profile picture updated", "success");
     } catch {
       showToast("Failed to update profile picture", "error");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -130,6 +137,7 @@ export default function Profile() {
 
   const changePassword = async () => {
     if (!oldPassword || !newPassword) return;
+    setLoading(true);
     try {
       await updatePassword({ password: oldPassword, newPassword });
       setOldPassword("");
@@ -137,19 +145,28 @@ export default function Profile() {
       showToast("Password changed", "success");
     } catch {
       showToast("Failed to change password", "error");
+    } finally {
+      setLoading(false);
     }
   };
 
   // ---------------- DELETE ACCOUNT ----------------
   const removeAccount = async () => {
-    if (!confirm("This action cannot be undone.")) return;
+    if (
+      !confirm("This action cannot be undone. All related data will be deleted")
+    )
+      return;
+
+    setLoading(true);
     try {
       await deleteUser();
       clearAuth();
       showToast("Account deleted", "success");
-      navigate("/home", { replace: true });
+      navigate("/", { replace: true });
     } catch {
       showToast("Failed to delete account", "error");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -246,12 +263,12 @@ export default function Profile() {
               onClick={updateName}
               className="mt-3 px-4 py-2 bg-white text-black text-sm"
             >
-              Update
+              {loading ? "Updating..." : "Update"}
             </button>
           </section>
 
           <section>
-            <h3 className="text-sm mb-2">Profile Picture</h3>
+            <h3 className="text-sm mb-2">Change Profile Picture</h3>
             {preview && (
               <img src={preview} className="w-16 h-16 rounded-full mb-2" />
             )}
@@ -260,7 +277,7 @@ export default function Profile() {
               onClick={updatePic}
               className="mt-3 px-4 py-2 bg-white text-black text-sm"
             >
-              Upload
+              {loading ? "Uploading..." : "Upload"}
             </button>
           </section>
 
@@ -284,7 +301,7 @@ export default function Profile() {
               onClick={changePassword}
               className="mt-3 px-4 py-2 bg-white text-black text-sm"
             >
-              Update Password
+              {loading ? "Updating..." : "Update"}
             </button>
           </section>
 
@@ -292,7 +309,7 @@ export default function Profile() {
             onClick={removeAccount}
             className="w-full py-2 bg-red-600 text-white text-sm"
           >
-            Delete Account
+            {loading ? "Deleting..." : "Delete Account"}
           </button>
         </div>
       )}

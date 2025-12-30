@@ -138,16 +138,10 @@ export const usePostStore = create<PostStore>((set, get) => ({
   createPost: async (formData) => {
     const res = await createPostApi(formData);
 
-    const user = useAuthStore.getState().user;
-
     const newPost: Post = {
       ...res.data,
       alreadyLiked: false,
       likes: [],
-      uploadedBy: {
-        ...res.data.uploadedBy,
-        _id: user?.user_id || res.data.uploadedBy._id,
-      },
     };
 
     set((state) => ({

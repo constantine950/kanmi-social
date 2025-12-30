@@ -36,10 +36,15 @@ const createPost = catchAsync(async (req, res, next) => {
     image: imageData,
   });
 
+  const populatedPost = await post.populate(
+    "uploadedBy",
+    "username profilePicture"
+  );
+
   res.status(201).json({
     success: true,
     message: "Post created",
-    data: post,
+    data: populatedPost,
   });
 });
 
