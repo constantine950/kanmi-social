@@ -17,7 +17,6 @@ connectDB();
 
 const app = express();
 
-// 🚫 Disable ETag generation
 app.set("etag", false);
 
 app.use(

@@ -4,10 +4,14 @@ const connectDB = async () => {
   try {
     const uri = process.env.MONGO_DB_URI;
     if (!uri) throw new Error("MONGO_DB_URI not found");
-    await mongoose.connect(uri);
-    console.log("Mongodb connected");
+
+    await mongoose.connect(uri, {
+      family: 4,
+    });
+
+    console.log("MongoDB connected");
   } catch (error) {
-    console.error("Mongodb not connected", error);
+    console.error("MongoDB not connected", error);
     process.exit(1);
   }
 };

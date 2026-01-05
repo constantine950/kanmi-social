@@ -18,7 +18,7 @@ export default function ProtectedRoute({ guestOnly = false }) {
   }
 
   if (!guestOnly && !isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/" replace />;
   }
 
   return <Outlet />;
