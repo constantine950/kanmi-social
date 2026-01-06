@@ -181,13 +181,14 @@ const updatePost = catchAsync(async (req, res, next) => {
 const togglePostLike = catchAsync(async (req, res, next) => {
   const postId = req.params.id;
   const userId = req.userInfo?.user_id;
-  const io = getIO();
 
   const post = await Post.findById(postId);
-  if (!post) return next(new AppError("post not found", 404));
+  if (!post) return next(new AppError("Post not found", 404));
 
   const alreadyLiked = post.likes.includes(userId!);
   let updatedAlreadyLiked: boolean;
+
+  const io = getIO();
 
   if (alreadyLiked) {
     post.likes = post.likes.filter((id) => id.toString() !== userId);
@@ -195,6 +196,8 @@ const togglePostLike = catchAsync(async (req, res, next) => {
   } else {
     post.likes.push(userId!);
     updatedAlreadyLiked = true;
+
+    // Notify post owner if not liking own post
     if (post.uploadedBy.toString() !== userId) {
       const notification = await Notification.create({
         recipient: post.uploadedBy,
@@ -207,6 +210,7 @@ const togglePostLike = catchAsync(async (req, res, next) => {
       const recipientSocketId = onlineUsers.get(post.uploadedBy.toString());
       if (recipientSocketId) {
         io.to(recipientSocketId).emit("notification:new", {
+          type: "like", // ✅ important
           message: notification.message,
           from: userId,
           postId: post._id,

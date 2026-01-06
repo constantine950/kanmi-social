@@ -13,10 +13,12 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import { useAuthStore } from "./zustand/authStore";
 import { useEffect } from "react";
 import { refreshToken } from "./api/authApi";
+import { disconnectSocket, initSocket } from "./socket";
 
 function App() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const setAuth = useAuthStore((s) => s.setAuth);
+  const user = useAuthStore((s) => s.user);
   const setAuthLoading = useAuthStore((s) => s.setAuthLoading);
 
   useEffect(() => {
@@ -38,6 +40,14 @@ function App() {
 
     restoreSession();
   }, [isAuthenticated, setAuth, setAuthLoading]);
+
+  useEffect(() => {
+    if (user) {
+      initSocket();
+    } else {
+      disconnectSocket();
+    }
+  }, [user]);
 
   return (
     <Router>

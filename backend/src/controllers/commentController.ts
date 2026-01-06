@@ -27,7 +27,6 @@ export const createComment = catchAsync(async (req, res, next) => {
     "username profilePicture"
   );
 
-  // 🔔 Notify post owner
   const postOwnerId = post.uploadedBy.toString();
   if (postOwnerId !== userId) {
     const notification = await Notification.create({
@@ -44,7 +43,7 @@ export const createComment = catchAsync(async (req, res, next) => {
     if (recipientSocketId) {
       const sender = await User.findById(userId).select("username");
       io.to(recipientSocketId).emit("notification:new", {
-        type: "comment",
+        type: "comment", // ✅ important
         message: notification.message,
         from: sender?.username,
         postId,
