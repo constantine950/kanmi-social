@@ -29,6 +29,7 @@ export interface CustomNotificationProperty extends Document {
   postId: Types.ObjectId;
   message: string;
   read: boolean;
+  createdAt: Date;
 }
 
 export interface CustomMessageProperty {

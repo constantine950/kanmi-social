@@ -6,6 +6,7 @@ import catchAsync from "../utils/catchAsync.ts";
 import { uploadBufferToCloudinary } from "../utils/cloudinaryHelper.ts";
 import Notification from "../models/Notification.ts";
 import { getIO, onlineUsers } from "../socket.ts";
+import User from "../models/User.ts";
 
 const createPost = catchAsync(async (req, res, next) => {
   const { text } = req.body;
@@ -181,41 +182,58 @@ const updatePost = catchAsync(async (req, res, next) => {
 const togglePostLike = catchAsync(async (req, res, next) => {
   const postId = req.params.id;
   const userId = req.userInfo?.user_id;
-
-  const post = await Post.findById(postId);
-  if (!post) return next(new AppError("Post not found", 404));
-
-  const alreadyLiked = post.likes.includes(userId!);
-  let updatedAlreadyLiked: boolean;
-
   const io = getIO();
 
-  if (alreadyLiked) {
-    post.likes = post.likes.filter((id) => id.toString() !== userId);
-    updatedAlreadyLiked = false;
-  } else {
-    post.likes.push(userId!);
-    updatedAlreadyLiked = true;
+  const post = await Post.findById(postId).populate("uploadedBy", "username");
+  if (!post) return next(new AppError("Post not found", 404));
 
-    // Notify post owner if not liking own post
-    if (post.uploadedBy.toString() !== userId) {
-      const notification = await Notification.create({
-        recipient: post.uploadedBy,
+  const actor = await User.findById(userId).select("username");
+  const recipientId = post.uploadedBy._id.toString();
+  const recipientUsername = (post.uploadedBy as any).username;
+
+  const alreadyLiked = post.likes.includes(userId!);
+
+  if (alreadyLiked) {
+    // 🔻 UNLIKE
+    post.likes = post.likes.filter((id) => id.toString() !== userId);
+
+    // Actor feedback only
+    const actorSocketId = onlineUsers.get(userId!);
+    if (actorSocketId) {
+      io.to(actorSocketId).emit("toast:feedback", {
+        message: `You unliked ${recipientUsername}'s post`,
+      });
+    }
+  } else {
+    // ❤️ LIKE
+    post.likes.push(userId!);
+
+    // Notify recipient ONLY
+    if (recipientId !== userId) {
+      await Notification.create({
+        recipient: recipientId,
         sender: userId,
         type: "like",
-        postId: post._id,
+        postId,
         message: "liked your post",
       });
 
-      const recipientSocketId = onlineUsers.get(post.uploadedBy.toString());
+      const recipientSocketId = onlineUsers.get(recipientId);
       if (recipientSocketId) {
         io.to(recipientSocketId).emit("notification:new", {
-          type: "like", // ✅ important
-          message: notification.message,
-          from: userId,
-          postId: post._id,
+          type: "like",
+          sender: { username: actor?.username },
+          message: `${actor?.username} liked your post ❤️`,
         });
       }
+    }
+
+    // Actor feedback only
+    const actorSocketId = onlineUsers.get(userId!);
+    if (actorSocketId) {
+      io.to(actorSocketId).emit("toast:feedback", {
+        message: `You liked ${recipientUsername}'s post ❤️`,
+      });
     }
   }
 
@@ -225,7 +243,7 @@ const togglePostLike = catchAsync(async (req, res, next) => {
     success: true,
     data: {
       likes: post.likes.map((id) => id.toString()),
-      alreadyLiked: updatedAlreadyLiked,
+      alreadyLiked: !alreadyLiked,
     },
   });
 });
