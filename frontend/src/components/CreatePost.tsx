@@ -60,7 +60,6 @@ export default function CreatePost() {
       onSubmit={handleSubmit}
       className="border border-stone-800 p-4 bg-stone-950 space-y-3"
     >
-      {/* Text */}
       <textarea
         value={text}
         onChange={(e) => setText(e.target.value)}
@@ -69,7 +68,6 @@ export default function CreatePost() {
         rows={3}
       />
 
-      {/* Image preview */}
       {preview && (
         <div className="relative">
           <img
@@ -87,7 +85,6 @@ export default function CreatePost() {
         </div>
       )}
 
-      {/* Actions */}
       <div className="flex items-center justify-between">
         <input
           ref={fileInputRef}
@@ -112,9 +109,11 @@ export default function CreatePost() {
         <button
           type="submit"
           disabled={loading}
-          className="px-4 py-1 cursor-pointer text-xs bg-white text-black disabled:opacity-50"
+          className={`px-4 py-1 ${
+            loading ? "cursor-not-allowed" : "cursor-pointer"
+          } text-xs bg-white text-black disabled:opacity-50`}
         >
-          {loading ? "Posting..." : "Post"}
+          Post
         </button>
       </div>
     </form>
