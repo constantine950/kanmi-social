@@ -4,8 +4,6 @@ import {
   markNotificationAsReadApi,
   markAllNotificationsAsReadApi,
 } from "../api/notificationApi";
-import { socket } from "../socket";
-import { useUIStore } from "../zustand/uiStore";
 
 interface Notification {
   _id: string;
@@ -23,7 +21,6 @@ interface Notification {
 export default function Notifications() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
-  const showToast = useUIStore((s) => s.showToast);
 
   useEffect(() => {
     const fetchNotifications = async () => {
@@ -34,22 +31,6 @@ export default function Notifications() {
     };
     fetchNotifications();
   }, []);
-
-  useEffect(() => {
-    socket.on("notification:new", (notif: Notification) => {
-      setNotifications((prev) => [notif, ...prev]);
-      showToast(
-        notif.type === "like"
-          ? "Someone liked your post ❤️"
-          : "Someone commented on your post 💬",
-        "info"
-      );
-    });
-
-    return () => {
-      socket.off("notification:new");
-    };
-  }, [showToast]);
 
   const markAsRead = async (id: string) => {
     await markNotificationAsReadApi(id);
