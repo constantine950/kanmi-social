@@ -2,6 +2,7 @@ import express from "express";
 import authMiddleware from "../middlewares/auth.ts";
 import {
   deleteUser,
+  getAllUsers,
   getSingleUser,
   updateBio,
   updatePassword,
@@ -12,6 +13,7 @@ import upload from "../middlewares/upload.ts";
 
 const userRoutes = express.Router();
 
+userRoutes.get("/all-users", authMiddleware, getAllUsers);
 userRoutes.get("/me", authMiddleware, getSingleUser);
 userRoutes.patch("/update-username", authMiddleware, updateUsername);
 userRoutes.patch("/update-bio", authMiddleware, updateBio);

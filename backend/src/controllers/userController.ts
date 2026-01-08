@@ -8,6 +8,20 @@ import Post from "../models/Post.ts";
 import BlacklistedToken from "../models/BlacklistedToken.ts";
 import jwt from "jsonwebtoken";
 
+const getAllUsers = catchAsync(async (req, res) => {
+  const userId = req.userInfo?.user_id;
+
+  const users = await User.find(
+    { _id: { $ne: userId } },
+    "username profilePicture"
+  ).sort({ username: 1 });
+
+  res.status(200).json({
+    success: true,
+    data: users,
+  });
+});
+
 const getSingleUser = catchAsync(async (req, res, next) => {
   const userId = req.userInfo?.user_id;
 
@@ -191,6 +205,7 @@ const deleteUser = catchAsync(async (req, res, next) => {
 });
 
 export {
+  getAllUsers,
   getSingleUser,
   updateUsername,
   updateBio,

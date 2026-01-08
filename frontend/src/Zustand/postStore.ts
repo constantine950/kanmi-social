@@ -158,9 +158,6 @@ export const usePostStore = create<PostStore>((set, get) => ({
     }));
   },
 
-  // =======================
-  // ❤️ TOGGLE LIKE
-  // =======================
   toggleLike: async (postId: string) => {
     const userId = useAuthStore.getState().user?.user_id;
     if (!userId) return;
