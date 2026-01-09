@@ -1,4 +1,4 @@
-import { X, Trash2 } from "lucide-react";
+import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   getCommentsApi,
@@ -8,6 +8,8 @@ import {
 import type { Comment, CommentsModalProps } from "../types";
 import { useAuthStore } from "../zustand/authStore";
 import { useUIStore } from "../zustand/uiStore";
+import CommentCard from "./CommentCard";
+import CommentInput from "./CommentInput";
 
 export default function CommentsModal({
   postId,
@@ -21,7 +23,7 @@ export default function CommentsModal({
   const currentUser = useAuthStore((s) => s.user);
   const showToast = useUIStore((s) => s.showToast);
 
-  // 🔄 FETCH COMMENTS
+  // FETCH COMMENTS
   useEffect(() => {
     if (!isOpen) return;
 
@@ -38,7 +40,7 @@ export default function CommentsModal({
     fetchComments();
   }, [isOpen, postId]);
 
-  // ➕ ADD COMMENT
+  // ADD COMMENT
   const addComment = async () => {
     if (!commentInput.trim() || !currentUser) return;
 
@@ -70,7 +72,7 @@ export default function CommentsModal({
     }
   };
 
-  // 🗑️ DELETE COMMENT (ONLY OWNER)
+  // DELETE COMMENT (ONLY OWNER)
   const deleteComment = async (commentId: string) => {
     const previousComments = comments;
 
@@ -116,54 +118,21 @@ export default function CommentsModal({
             const isOwner = c.userId._id === currentUser?.user_id;
 
             return (
-              <div key={c._id} className="flex gap-3">
-                <img
-                  src={
-                    c.userId.profilePicture?.url || "/avatar-placeholder.png"
-                  }
-                  alt="avatar"
-                  className="w-8 h-8 rounded-full object-cover"
-                />
-
-                <div className="flex-1 text-sm text-stone-300">
-                  <div className="flex justify-between items-center">
-                    <span className="font-semibold text-white">
-                      {c.userId.username}
-                    </span>
-
-                    {isOwner && (
-                      <button
-                        onClick={() => deleteComment(c._id)}
-                        className="text-red-400 hover:text-red-500"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    )}
-                  </div>
-
-                  <p>{c.text}</p>
-                </div>
-              </div>
+              <CommentCard
+                isOwner={isOwner}
+                c={c}
+                deleteComment={deleteComment}
+              />
             );
           })}
         </div>
 
         {/* INPUT */}
-        <div className="flex gap-2 mt-3 border-t border-stone-800 pt-3">
-          <input
-            value={commentInput}
-            onChange={(e) => setCommentInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && addComment()}
-            placeholder="Write a comment…"
-            className="flex-1 px-3 py-2 bg-stone-900 border border-stone-800 text-sm text-stone-200 focus:outline-none"
-          />
-          <button
-            onClick={addComment}
-            className="px-4 py-2 bg-white text-black text-sm font-medium rounded hover:bg-stone-300"
-          >
-            Post
-          </button>
-        </div>
+        <CommentInput
+          commentInput={commentInput}
+          setCommentInput={setCommentInput}
+          addComment={addComment}
+        />
       </div>
     </div>
   );

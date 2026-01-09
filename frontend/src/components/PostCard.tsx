@@ -1,9 +1,12 @@
 import { memo, useRef, useState } from "react";
-import { Heart, MessageCircle, Trash2, Pencil, X } from "lucide-react";
 import CommentsModal from "./CommentsModal";
 import type { PostCardProps } from "../types";
 import { usePostStore } from "../zustand/postStore";
 import { useAuthStore } from "../zustand/authStore";
+import PostImg from "./PostImg";
+import OwnerActions from "./OwnerActions";
+import PostBody from "./PostBody";
+import PostActions from "./PostActions";
 
 const PostCard = memo(function PostCard({ post }: PostCardProps) {
   const storePost = usePostStore(
@@ -59,84 +62,25 @@ const PostCard = memo(function PostCard({ post }: PostCardProps) {
       <div className="border border-stone-800 bg-stone-950 p-4 space-y-3">
         {/* HEADER */}
         <div className="flex justify-between items-start">
-          <div className="flex gap-3">
-            <img
-              src={uploadedBy?.profilePicture?.url || "/avatar.png"}
-              className="w-8 h-8 rounded-full"
-            />
-            <div>
-              <p className="text-sm font-medium text-white">
-                {uploadedBy?.username || "Unknown"}
-              </p>
-              <p className="text-xs text-stone-500">
-                {new Date(createdAt).toLocaleDateString(undefined, {
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                })}{" "}
-                at{" "}
-                {new Date(createdAt).toLocaleTimeString(undefined, {
-                  hour: "numeric",
-                  minute: "2-digit",
-                  hour12: true,
-                })}
-              </p>
-            </div>
-          </div>
+          <PostImg uploadedBy={uploadedBy} createdAt={createdAt} />
 
           {/* OWNER ACTIONS */}
-          <div className="flex gap-2">
-            <button
-              disabled={!isOwner}
-              onClick={startEdit}
-              className={`p-1 ${
-                isOwner
-                  ? "text-stone-400 hover:text-white"
-                  : "opacity-40 cursor-not-allowed"
-              }`}
-            >
-              <Pencil size={16} />
-            </button>
-
-            <button
-              disabled={!isOwner}
-              onClick={() => deletePost(storePost._id)}
-              className={`p-1 ${
-                isOwner
-                  ? "text-red-500 hover:bg-red-500/10"
-                  : "opacity-40 cursor-not-allowed"
-              }`}
-            >
-              <Trash2 size={16} />
-            </button>
-          </div>
+          <OwnerActions
+            isOwner={isOwner}
+            startEdit={startEdit}
+            storePost={storePost}
+            deletePost={deletePost}
+          />
         </div>
 
         {/* BODY */}
         {isEditing ? (
-          <div className="space-y-2">
-            <textarea
-              value={editText}
-              onChange={(e) => setEditText(e.target.value)}
-              className="w-full bg-black border border-stone-700 p-2 text-sm text-white"
-              rows={3}
-            />
-
-            <div className="flex gap-2 justify-end">
-              <button
-                onClick={cancelEdit}
-                className="text-xs text-stone-400 flex items-center gap-1"
-              >
-                <X size={14} /> Cancel
-              </button>
-              <button
-                onClick={saveEdit}
-                className="text-xs bg-white text-black px-3 py-1"
-              >
-                Save
-              </button>
-            </div>
-          </div>
+          <PostBody
+            editText={editText}
+            saveEdit={saveEdit}
+            setEditText={setEditText}
+            cancelEdit={cancelEdit}
+          />
         ) : (
           <p className="text-sm text-stone-300">{text}</p>
         )}
@@ -152,30 +96,13 @@ const PostCard = memo(function PostCard({ post }: PostCardProps) {
         )}
 
         {/* ACTIONS */}
-        <div className="flex gap-6 text-sm text-stone-400">
-          <button
-            onClick={() => toggleLike(storePost._id)}
-            className="flex items-center gap-1"
-          >
-            <Heart
-              size={18}
-              className={
-                alreadyLiked
-                  ? "text-red-500 cursor-pointer"
-                  : "text-stone-400 cursor-pointer"
-              }
-              fill={alreadyLiked ? "red" : "none"}
-            />
-            {likes?.length || 0}
-          </button>
-
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-1 cursor-pointer"
-          >
-            <MessageCircle size={18} />
-          </button>
-        </div>
+        <PostActions
+          storePost={storePost}
+          setIsModalOpen={setIsModalOpen}
+          toggleLike={toggleLike}
+          alreadyLiked={alreadyLiked}
+          likes={likes}
+        />
       </div>
 
       <CommentsModal
