@@ -12,6 +12,9 @@ import { getUserPosts } from "../api/postApi";
 import { useNavigate } from "react-router";
 import { useAuthStore } from "../zustand/authStore";
 import { useUIStore } from "../zustand/uiStore";
+import ProfileSkeleton from "../components/ProfileSkeleton";
+import ProfileHeader from "../components/ProfileHeader";
+import Settings from "../components/Settings";
 
 export interface ProfilePicture {
   url: string;
@@ -170,54 +173,19 @@ export default function Profile() {
     }
   };
 
-  // ---------------- SKELETON ----------------
   if (loading) return <ProfileSkeleton />;
   if (!user) return null;
 
   return (
     <div className="min-h-screen bg-black text-stone-200 px-6 md:px-14 pt-10 font-[Inter]">
-      {/* ---------- HEADER ---------- */}
-      <div className="flex items-start gap-5 mb-10">
-        <img
-          src={user.profilePicture?.url || "/default-avatar.png"}
-          className="w-24 h-24 rounded-full object-cover border border-stone-700"
-        />
-
-        <div className="flex-1">
-          <h1 className="text-3xl font-[Playfair_Display]">{user.username}</h1>
-
-          {!editingBio ? (
-            <p
-              className="text-sm text-stone-400 mt-2 cursor-pointer"
-              onClick={() => setEditingBio(true)}
-            >
-              {bio || "Click to add bio"}
-            </p>
-          ) : (
-            <div className="mt-2 space-y-2">
-              <textarea
-                value={bio}
-                onChange={(e) => setBio(e.target.value)}
-                className="w-full bg-stone-900 border border-stone-800 p-2 text-sm"
-              />
-              <div className="flex space-x-1.5">
-                <button
-                  onClick={saveBio}
-                  className="text-xs px-3 py-1 bg-white text-black"
-                >
-                  Save
-                </button>
-                <button
-                  onClick={() => setEditingBio(false)}
-                  className="text-xs px-3 py-1 bg-white text-black"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
+      <ProfileHeader
+        user={user}
+        bio={bio}
+        setBio={setBio}
+        saveBio={saveBio}
+        setEditingBio={setEditingBio}
+        editingBio={editingBio}
+      />
 
       {/* ---------- TABS ---------- */}
       <div className="flex gap-8 border-b border-stone-800 mb-8 text-sm">
@@ -251,89 +219,22 @@ export default function Profile() {
 
       {/* ---------- SETTINGS ---------- */}
       {tab === "settings" && (
-        <div className="max-w-md space-y-8">
-          <section>
-            <h3 className="text-sm mb-2">Change Username</h3>
-            <input
-              value={newUsername}
-              onChange={(e) => setNewUsername(e.target.value)}
-              className="w-full bg-stone-900 border border-stone-800 px-3 py-2 text-sm"
-            />
-            <button
-              onClick={updateName}
-              className="mt-3 px-4 py-2 bg-white text-black text-sm"
-            >
-              {loading ? "Updating..." : "Update"}
-            </button>
-          </section>
-
-          <section>
-            <h3 className="text-sm mb-2">Change Profile Picture</h3>
-            {preview && (
-              <img src={preview} className="w-16 h-16 rounded-full mb-2" />
-            )}
-            <input type="file" onChange={onPicChange} />
-            <button
-              onClick={updatePic}
-              className="mt-3 px-4 py-2 bg-white text-black text-sm"
-            >
-              {loading ? "Uploading..." : "Upload"}
-            </button>
-          </section>
-
-          <section>
-            <h3 className="text-sm mb-2">Change Password</h3>
-            <input
-              type="password"
-              placeholder="Old password"
-              value={oldPassword}
-              onChange={(e) => setOldPassword(e.target.value)}
-              className="w-full bg-stone-900 border border-stone-800 px-3 py-2 text-sm mb-2"
-            />
-            <input
-              type="password"
-              placeholder="New password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              className="w-full bg-stone-900 border border-stone-800 px-3 py-2 text-sm"
-            />
-            <button
-              onClick={changePassword}
-              className="mt-3 px-4 py-2 bg-white text-black text-sm"
-            >
-              {loading ? "Updating..." : "Update"}
-            </button>
-          </section>
-
-          <button
-            onClick={removeAccount}
-            className="w-full py-2 bg-red-600 text-white text-sm"
-          >
-            {loading ? "Deleting..." : "Delete Account"}
-          </button>
-        </div>
+        <Settings
+          updateName={updateName}
+          updatePic={updatePic}
+          setNewPassword={setNewPassword}
+          setNewUsername={setNewUsername}
+          setOldPassword={setOldPassword}
+          newPassword={newPassword}
+          newUsername={newUsername}
+          loading={loading}
+          preview={preview}
+          onPicChange={onPicChange}
+          oldPassword={oldPassword}
+          changePassword={changePassword}
+          removeAccount={removeAccount}
+        />
       )}
-    </div>
-  );
-}
-
-/* ================== SKELETON ================== */
-function ProfileSkeleton() {
-  return (
-    <div className="min-h-screen bg-black px-6 md:px-14 pt-10 animate-pulse">
-      <div className="flex items-center gap-5 mb-10">
-        <div className="w-24 h-24 bg-stone-800 rounded-full" />
-        <div className="space-y-3">
-          <div className="w-48 h-6 bg-stone-800" />
-          <div className="w-64 h-4 bg-stone-800" />
-        </div>
-      </div>
-
-      <div className="space-y-4 max-w-2xl">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="h-32 bg-stone-800" />
-        ))}
-      </div>
     </div>
   );
 }

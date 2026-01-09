@@ -1,4 +1,3 @@
-import { ArrowLeft, Trash2 } from "lucide-react";
 import { useState, useEffect, useRef, type ChangeEvent } from "react";
 import { useAuthStore } from "../zustand/authStore";
 import { useUIStore } from "../zustand/uiStore";
@@ -10,6 +9,10 @@ import {
   getAllUsers,
 } from "../api/messageApi";
 import { AxiosError } from "axios";
+import UsersList from "../components/UsersList";
+import MessageHeader from "../components/MessageHeader";
+import MessageCard from "../components/MessageCard";
+import MessageInput from "../components/MessageInput";
 
 interface Message {
   _id: string;
@@ -220,50 +223,16 @@ export default function Messages() {
     setImagePreview(null);
   };
 
-  const formatTime = (dateString: string) => {
-    return new Date(dateString).toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
   return (
     <div className="w-full h-screen bg-black text-stone-200 font-[Inter] overflow-hidden">
       <div className="h-full flex gap-4 w-full md:max-w-[960px] mx-auto">
         {/* USERS LIST */}
-        <div
-          className={`
-            w-full md:w-80 h-full border border-stone-800 bg-stone-950 overflow-y-auto
-            ${isMobile && selectedUser ? "hidden" : "block"}
-          `}
-        >
-          {users.length === 0 ? (
-            <div className="flex items-center justify-center h-full text-stone-500 text-sm">
-              No users available
-            </div>
-          ) : (
-            users.map((chatUser) => (
-              <div
-                key={chatUser._id}
-                className={`flex items-center gap-3 p-3 cursor-pointer border-b border-stone-800 hover:bg-stone-900 ${
-                  selectedUser?._id === chatUser._id ? "bg-stone-900" : ""
-                }`}
-                onClick={() => handleUserSelect(chatUser)}
-              >
-                <img
-                  src={chatUser.profilePicture || "/default-avatar.png"}
-                  alt={chatUser.username}
-                  className="w-10 h-10 border border-stone-700 object-cover rounded-full"
-                />
-                <div className="flex-1 min-w-0">
-                  <span className="text-sm font-medium text-white">
-                    {chatUser.username}
-                  </span>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
+        <UsersList
+          users={users}
+          isMobile={isMobile}
+          handleUserSelect={handleUserSelect}
+          selectedUser={selectedUser}
+        />
 
         {/* CHAT WINDOW */}
         <div
@@ -280,26 +249,11 @@ export default function Messages() {
           ) : (
             <>
               {/* HEADER */}
-              <div className="flex items-center gap-3 p-3 border-b border-stone-800 shrink-0">
-                {isMobile && (
-                  <button
-                    onClick={() => setSelectedUser(null)}
-                    className="text-stone-300 p-2 border border-stone-700 bg-stone-900 hover:bg-stone-800"
-                  >
-                    <ArrowLeft className="w-5 h-5" />
-                  </button>
-                )}
-                <img
-                  src={selectedUser.profilePicture || "/default-avatar.png"}
-                  alt={selectedUser.username}
-                  className="w-10 h-10 border border-stone-700 object-cover rounded-full"
-                />
-                <div>
-                  <span className="text-sm font-medium text-white">
-                    {selectedUser.username}
-                  </span>
-                </div>
-              </div>
+              <MessageHeader
+                isMobile={isMobile}
+                selectedUser={selectedUser}
+                setSelectedUser={setSelectedUser}
+              />
 
               {/* MESSAGES */}
               <div className="flex-1 p-3 space-y-2 overflow-y-auto">
@@ -314,6 +268,7 @@ export default function Messages() {
                 ) : (
                   messages.map((msg) => {
                     const isYou = msg.sender._id === user?.user_id;
+
                     return (
                       <div
                         key={msg._id}
@@ -321,36 +276,11 @@ export default function Messages() {
                           isYou ? "justify-end" : "justify-start"
                         }`}
                       >
-                        <div
-                          className={`max-w-[70%] px-2 py-1 text-xs relative group ${
-                            isYou
-                              ? "bg-white text-black"
-                              : "bg-stone-900 text-stone-200"
-                          }`}
-                        >
-                          {msg.image && (
-                            <img
-                              src={msg.image.url}
-                              alt="sent"
-                              className="w-full max-h-64 object-cover mb-1"
-                            />
-                          )}
-                          {msg.text && <div>{msg.text}</div>}
-                          <div className="flex items-center justify-between gap-2 mt-1">
-                            <div className="text-xs text-stone-400">
-                              {formatTime(msg.createdAt)}
-                            </div>
-                            {isYou && (
-                              <button
-                                onClick={() => handleDeleteMessage(msg._id)}
-                                className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-stone-800 rounded"
-                                title="Delete message"
-                              >
-                                <Trash2 className="w-3 h-3 text-red-500" />
-                              </button>
-                            )}
-                          </div>
-                        </div>
+                        <MessageCard
+                          isYou={isYou}
+                          handleDeleteMessage={handleDeleteMessage}
+                          msg={msg}
+                        />
                       </div>
                     );
                   })
@@ -359,59 +289,16 @@ export default function Messages() {
               </div>
 
               {/* INPUT */}
-              <div className="p-3 border-t border-stone-800 flex flex-col md:flex-row gap-2 shrink-0">
-                <input
-                  type="text"
-                  placeholder="Type a message..."
-                  className="flex-1 px-3 py-2 bg-stone-900 border border-stone-800 text-sm text-stone-200"
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  onKeyDown={(e) =>
-                    e.key === "Enter" && !sendingMessage && handleSendMessage()
-                  }
-                  disabled={sendingMessage}
-                />
-                <div className="flex items-center gap-2">
-                  {imagePreview && (
-                    <div className="flex items-center gap-2 border border-stone-700 bg-stone-950 p-1">
-                      <img
-                        src={imagePreview}
-                        alt="preview"
-                        className="w-8 h-8 object-cover border border-stone-700"
-                      />
-                      <button
-                        onClick={removeImage}
-                        className="w-8 h-8 grid place-items-center border border-stone-700 bg-stone-900 text-stone-200 text-xs"
-                      >
-                        ✖
-                      </button>
-                    </div>
-                  )}
-                  <label
-                    htmlFor="chatImage"
-                    className="inline-flex items-center gap-2 px-3 py-2 border border-stone-800 bg-stone-900 text-stone-200 text-sm cursor-pointer hover:bg-stone-800"
-                  >
-                    Attach image
-                  </label>
-                  <input
-                    id="chatImage"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="hidden"
-                    disabled={sendingMessage}
-                  />
-                </div>
-                <button
-                  onClick={handleSendMessage}
-                  disabled={
-                    sendingMessage || (!newMessage.trim() && !imageFile)
-                  }
-                  className="px-4 py-2 bg-white text-black text-sm font-medium hover:bg-stone-300 border border-stone-800 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {sendingMessage ? "Sending..." : "Send"}
-                </button>
-              </div>
+              <MessageInput
+                removeImage={removeImage}
+                imageFile={imageFile}
+                imagePreview={imagePreview}
+                handleImageChange={handleImageChange}
+                handleSendMessage={handleSendMessage}
+                newMessage={newMessage}
+                setNewMessage={setNewMessage}
+                sendingMessage={sendingMessage}
+              />
             </>
           )}
         </div>
