@@ -29,7 +29,7 @@ const authMiddleware = async (
 
   const token = authHeader.split(" ")[1];
 
-  // 🔴 1️⃣ Check blacklist
+  // Check blacklist
   const blacklisted = await BlacklistedToken.findOne({ token });
   if (blacklisted) {
     return next(new AppError("Access token invalidated", 401));

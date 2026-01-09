@@ -9,6 +9,7 @@ import {
   deleteMessage as deleteMessageApi,
   getAllUsers,
 } from "../api/messageApi";
+import { AxiosError } from "axios";
 
 interface Message {
   _id: string;
@@ -76,8 +77,25 @@ export default function Messages() {
 
   // Fetch all users on mount
   useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await getAllUsers();
+
+        if (response.data.success) {
+          setUsers(response.data.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch users:", error);
+        const err = error as AxiosError<{ message: string }>;
+        showToast(
+          err.response?.data?.message || "Failed to load users",
+          "error"
+        );
+      }
+    };
+
     fetchUsers();
-  }, []);
+  }, [showToast]);
 
   // Socket listeners
   useEffect(() => {
@@ -117,22 +135,6 @@ export default function Messages() {
     };
   }, [selectedUser]);
 
-  const fetchUsers = async () => {
-    try {
-      const response = await getAllUsers();
-
-      if (response.data.success) {
-        setUsers(response.data.data);
-      }
-    } catch (error: any) {
-      console.error("Failed to fetch users:", error);
-      showToast(
-        error.response?.data?.message || "Failed to load users",
-        "error"
-      );
-    }
-  };
-
   const fetchMessages = async (userId: string) => {
     try {
       setLoading(true);
@@ -141,10 +143,11 @@ export default function Messages() {
       if (response.data.success) {
         setMessages(response.data.data);
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error("Failed to fetch messages:", error);
+      const err = error as AxiosError<{ message: string }>;
       showToast(
-        error.response?.data?.message || "Failed to load messages",
+        err.response?.data?.message || "Failed to load messages",
         "error"
       );
     } finally {
@@ -176,10 +179,11 @@ export default function Messages() {
         setImagePreview(null);
         // Message will be added via socket event
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error("Failed to send message:", error);
+      const err = error as AxiosError<{ message: string }>;
       showToast(
-        error.response?.data?.message || "Failed to send message",
+        err.response?.data?.message || "Failed to send message",
         "error"
       );
     } finally {
@@ -194,10 +198,11 @@ export default function Messages() {
       if (response.data.success) {
         // Message will be removed via socket event
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error("Failed to delete message:", error);
+      const err = error as AxiosError<{ message: string }>;
       showToast(
-        error.response?.data?.message || "Failed to delete message",
+        err.response?.data?.message || "Failed to delete message",
         "error"
       );
     }
