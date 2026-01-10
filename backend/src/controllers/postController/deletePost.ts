@@ -1,6 +1,6 @@
 import cloudinary from "../../config/cloudinary.ts";
 import Post from "../../models/Post.ts";
-import AppError from "../../utils/AppError";
+import AppError from "../../utils/AppError.ts";
 import catchAsync from "../../utils/catchAsync.ts";
 
 const deletePost = catchAsync(async (req, res, next) => {

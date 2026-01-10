@@ -1,8 +1,8 @@
 import Notification from "../../models/Notification.ts";
-import Post from "../../models/Post";
+import Post from "../../models/Post.ts";
 import User from "../../models/User.ts";
 import { getIO, onlineUsers } from "../../socket.ts";
-import AppError from "../../utils/AppError";
+import AppError from "../../utils/AppError.ts";
 import catchAsync from "../../utils/catchAsync.ts";
 
 const togglePostLike = catchAsync(async (req, res, next) => {

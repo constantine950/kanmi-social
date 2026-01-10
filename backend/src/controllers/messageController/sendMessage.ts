@@ -1,6 +1,6 @@
 import Message from "../../models/Message.ts";
 import { getIO, onlineUsers } from "../../socket.ts";
-import AppError from "../../utils/AppError";
+import AppError from "../../utils/AppError.ts";
 import catchAsync from "../../utils/catchAsync.ts";
 import { uploadBufferToCloudinary } from "../../utils/cloudinaryHelper.ts";
 

@@ -1,5 +1,5 @@
 import User from "../../models/User.ts";
-import AppError from "../../utils/AppError";
+import AppError from "../../utils/AppError.ts";
 import catchAsync from "../../utils/catchAsync.ts";
 
 const getSingleUser = catchAsync(async (req, res, next) => {

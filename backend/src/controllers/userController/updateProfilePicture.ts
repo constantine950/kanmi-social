@@ -1,8 +1,8 @@
-import cloudinary from "../../config/cloudinary";
-import User from "../../models/User";
-import AppError from "../../utils/AppError";
-import catchAsync from "../../utils/catchAsync";
-import { uploadBufferToCloudinary } from "../../utils/cloudinaryHelper";
+import cloudinary from "../../config/cloudinary.ts";
+import User from "../../models/User.ts";
+import AppError from "../../utils/AppError.ts";
+import catchAsync from "../../utils/catchAsync.ts";
+import { uploadBufferToCloudinary } from "../../utils/cloudinaryHelper.ts";
 
 const updateProfilePicture = catchAsync(async (req, res, next) => {
   const userId = req.userInfo?.user_id;

@@ -1,5 +1,5 @@
 import User from "../../models/User.ts";
-import { CustomProperty } from "../../types.ts";
+import { type CustomProperty } from "../../types.ts";
 import AppError from "../../utils/AppError.ts";
 import bcrypt from "bcryptjs";
 import catchAsync from "../../utils/catchAsync.ts";

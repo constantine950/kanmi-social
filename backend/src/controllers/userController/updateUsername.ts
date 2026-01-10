@@ -1,6 +1,6 @@
-import User from "../../models/User";
-import AppError from "../../utils/AppError";
-import catchAsync from "../../utils/catchAsync";
+import User from "../../models/User.ts";
+import AppError from "../../utils/AppError.ts";
+import catchAsync from "../../utils/catchAsync.ts";
 
 const updateUsername = catchAsync(async (req, res, next) => {
   const { username } = req.body;

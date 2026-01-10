@@ -1,7 +1,7 @@
 import Post from "../../models/Post.ts";
-import AppError from "../../utils/AppError";
+import AppError from "../../utils/AppError.ts";
 import catchAsync from "../../utils/catchAsync.ts";
-import { uploadBufferToCloudinary } from "../../utils/cloudinaryHelper";
+import { uploadBufferToCloudinary } from "../../utils/cloudinaryHelper.ts";
 
 const createPost = catchAsync(async (req, res, next) => {
   const { text } = req.body;

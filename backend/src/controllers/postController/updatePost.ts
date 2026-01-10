@@ -1,8 +1,8 @@
 import cloudinary from "../../config/cloudinary.ts";
-import Post from "../../models/Post";
-import AppError from "../../utils/AppError";
+import Post from "../../models/Post.ts";
+import AppError from "../../utils/AppError.ts";
 import catchAsync from "../../utils/catchAsync.ts";
-import { uploadBufferToCloudinary } from "../../utils/cloudinaryHelper";
+import { uploadBufferToCloudinary } from "../../utils/cloudinaryHelper.ts";
 
 const updatePost = catchAsync(async (req, res, next) => {
   const postId = req.params.id;
