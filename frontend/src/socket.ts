@@ -20,7 +20,6 @@ export const initSocket = () => {
   socket.connect();
 
   socket.on("connect", () => {
-    console.log("🟢 Connected:", socket.id);
     socket.emit("register", user.user_id);
   });
 
