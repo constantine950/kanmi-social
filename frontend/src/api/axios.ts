@@ -3,7 +3,7 @@ import { useAuthStore } from "../zustand/authStore";
 import { refreshToken } from "./authApi";
 
 const api = axios.create({
-  baseURL: "http://localhost:3000/api",
+  baseURL: "https://kanmi-social.onrender.com/api",
   withCredentials: true,
 });
 
