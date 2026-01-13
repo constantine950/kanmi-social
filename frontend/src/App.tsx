@@ -10,10 +10,10 @@ import Explore from "./pages/Explore";
 import AppLayout from "./components/AppLayout";
 import Toast from "./components/Toast";
 import ProtectedRoute from "./components/ProtectedRoute";
-import { useAuthStore } from "./zustand/authStore";
 import { useEffect } from "react";
 import { refreshToken } from "./api/authApi";
 import { disconnectSocket, initSocket } from "./socket";
+import { useAuthStore } from "./zustand/authStore";
 
 function App() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
