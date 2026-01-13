@@ -1,4 +1,4 @@
-import type { PostState } from "./posttypes.js";
+import type { PostState } from "./posttypes";
 
 export const initialPostState: PostState = {
   feedPosts: [],

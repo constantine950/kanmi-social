@@ -1,7 +1,7 @@
 import type { StateCreator } from "zustand";
 import { getTrendingPostsApi } from "../../api/postApi";
 import { mergePosts } from "../../utils/merge";
-import type { PostStore } from "./posttypes.js";
+import type { PostStore } from "./posttypes";
 
 export const createTrendingActions = (
   set: Parameters<StateCreator<PostStore>>[0],

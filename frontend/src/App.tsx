@@ -1,19 +1,19 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router";
-import LandingPage from "./pages/LandingPage.js";
-import Login from "./pages/Login.js";
-import Register from "./pages/Register.js";
-import Home from "./pages/Home.js";
-import Profile from "./pages/Profile.js";
-import Messages from "./pages/Messages.js";
-import Notifications from "./pages/Notifications.js";
-import Explore from "./pages/Explore.js";
-import AppLayout from "./components/AppLayout.js";
-import Toast from "./components/Toast.js";
-import ProtectedRoute from "./components/ProtectedRoute.js";
-import { useAuthStore } from "./zustand/authStore.js";
+import LandingPage from "./pages/LandingPage";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Home from "./pages/Home";
+import Profile from "./pages/Profile";
+import Messages from "./pages/Messages";
+import Notifications from "./pages/Notifications";
+import Explore from "./pages/Explore";
+import AppLayout from "./components/AppLayout";
+import Toast from "./components/Toast";
+import ProtectedRoute from "./components/ProtectedRoute";
+import { useAuthStore } from "./zustand/authStore";
 import { useEffect } from "react";
-import { refreshToken } from "./api/authApi.js";
-import { disconnectSocket, initSocket } from "./socket.js";
+import { refreshToken } from "./api/authApi";
+import { disconnectSocket, initSocket } from "./socket";
 
 function App() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);

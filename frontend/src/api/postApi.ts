@@ -1,4 +1,4 @@
-import api from "./axios.js";
+import api from "./axios";
 
 export const toggleLikeApi = async (postId: string) => {
   const res = await api.patch(`/posts/${postId}/like`);

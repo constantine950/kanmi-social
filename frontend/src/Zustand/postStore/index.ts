@@ -1,10 +1,10 @@
 import { create } from "zustand";
-import { initialPostState } from "./initialState.js";
-import { createFeedActions } from "./feedActions.js";
-import { createTrendingActions } from "./trendingActions.js";
-import { createCrudActions } from "./crudActions.js";
-import { createLikeActions } from "./likeActions.js";
-import type { PostStore } from "./posttypes.js";
+import { initialPostState } from "./initialState";
+import { createFeedActions } from "./feedActions";
+import { createTrendingActions } from "./trendingActions";
+import { createCrudActions } from "./crudActions";
+import { createLikeActions } from "./likeActions";
+import type { PostStore } from "./posttypes";
 
 export const usePostStore = create<PostStore>((set, get) => ({
   ...initialPostState,

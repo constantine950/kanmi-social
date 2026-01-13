@@ -1,7 +1,7 @@
 import type { StateCreator } from "zustand";
 import { getPostsApi } from "../../api/postApi";
 import { shuffleArray } from "../../utils/shuffle";
-import type { PostStore } from "./posttypes.js";
+import type { PostStore } from "./posttypes";
 
 export const createFeedActions = (
   set: Parameters<StateCreator<PostStore>>[0],

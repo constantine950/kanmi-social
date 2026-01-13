@@ -1,6 +1,6 @@
 import { io } from "socket.io-client";
-import { useAuthStore } from "./zustand/authStore.js";
-import { useUIStore } from "./zustand/uiStore.js";
+import { useAuthStore } from "./zustand/authStore";
+import { useUIStore } from "./zustand/uiStore";
 
 export const socket = io(
   import.meta.env.VITE_SOCKET_URL || "http://localhost:3000",

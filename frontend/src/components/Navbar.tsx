@@ -1,12 +1,12 @@
-import { useState, useRef, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
-import { Menu, X } from "lucide-react";
 import { useAuthStore } from "../zustand/authStore";
 import { logoutUser } from "../api/authApi";
-import Logo from "./Logo.js";
-import DesktopNav from "./DesktopNav.js";
-import MobileMenu from "./MobileMenu.js";
-import LogoutModal from "./LogoutModal.js";
+import DesktopNav from "./DesktopNav";
+import { Menu, X } from "lucide-react";
+import MobileMenu from "./MobileMenu";
+import LogoutModal from "./LogoutModal";
+import Logo from "./Logo";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);

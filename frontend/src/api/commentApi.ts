@@ -1,4 +1,4 @@
-import api from "./axios.js";
+import api from "./axios";
 
 export const getCommentsApi = async (postId: string) => {
   const res = await api.get(`/comments/${postId}`);
