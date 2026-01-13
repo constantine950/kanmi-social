@@ -19,6 +19,7 @@ function App() {
   const setAuth = useAuthStore((s) => s.setAuth);
   const user = useAuthStore((s) => s.user);
   const setAuthLoading = useAuthStore((s) => s.setAuthLoading);
+  const clearAuth = useAuthStore((s) => s.clearAuth);
 
   useEffect(() => {
     const restoreSession = async () => {
@@ -28,14 +29,14 @@ function App() {
         const res = await refreshToken();
         setAuth(res.data.user, res.data.newAccessToken);
       } catch {
-        useAuthStore.getState().clearAuth();
+        clearAuth();
       } finally {
         setAuthLoading(false);
       }
     };
 
     restoreSession();
-  }, [setAuth, setAuthLoading]);
+  }, [setAuth, setAuthLoading, clearAuth]);
 
   useEffect(() => {
     if (user) {
