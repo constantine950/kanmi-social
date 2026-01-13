@@ -23,7 +23,7 @@ app.set("etag", false);
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: "https://kanmi-social.onrender.com",
     credentials: true,
   })
 );
