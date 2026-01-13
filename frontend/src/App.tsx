@@ -16,17 +16,13 @@ import { disconnectSocket, initSocket } from "./socket";
 import { useAuthStore } from "./zustand/authStore";
 
 function App() {
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const setAuth = useAuthStore((s) => s.setAuth);
   const user = useAuthStore((s) => s.user);
   const setAuthLoading = useAuthStore((s) => s.setAuthLoading);
 
   useEffect(() => {
     const restoreSession = async () => {
-      if (!isAuthenticated) {
-        setAuthLoading(false);
-        return;
-      }
+      setAuthLoading(true);
 
       try {
         const res = await refreshToken();
@@ -39,7 +35,7 @@ function App() {
     };
 
     restoreSession();
-  }, [isAuthenticated, setAuth, setAuthLoading]);
+  }, [setAuth, setAuthLoading]);
 
   useEffect(() => {
     if (user) {
