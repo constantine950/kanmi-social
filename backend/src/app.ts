@@ -23,7 +23,7 @@ app.set("etag", false);
 
 app.use(
   cors({
-    origin: "https://kanmi-social.onrender.com",
+    origin: "http://kanmi-social.vercel.app",
     credentials: true,
   })
 );
