@@ -3,7 +3,7 @@ import { useAuthStore } from "./zustand/authStore";
 import { useUIStore } from "./zustand/uiStore";
 
 export const socket = io(
-  import.meta.env.VITE_SOCKET_URL || "http://localhost:3000",
+  import.meta.env.VITE_SOCKET_URL || "https://kanmi-social.onrender.com",
   {
     autoConnect: false,
   }
