@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
-import catchAsync from "../../utils/catchAsync.ts";
-import Post from "../../models/Post.ts";
+import catchAsync from "../../utils/catchAsync.js";
+import Post from "../../models/Post.js";
 
 const getTrendingPosts = catchAsync(async (req, res) => {
   const userId = req.userInfo!.user_id;

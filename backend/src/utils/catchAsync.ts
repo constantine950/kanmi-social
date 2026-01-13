@@ -1,5 +1,5 @@
 import { type NextFunction, type Response } from "express";
-import { type UserRes, type UserInfoReq } from "../types.ts";
+import { type UserRes, type UserInfoReq } from "../types.js";
 
 const catchAsync = (
   fn: (

@@ -2,7 +2,7 @@ import type { StateCreator } from "zustand";
 import type { Post } from "../../types";
 import { toggleLikeApi } from "../../api/postApi";
 import { useAuthStore } from "../authStore";
-import type { PostStore } from "./posttypes";
+import type { PostStore } from "./posttypes.js";
 
 export const createLikeActions = (
   set: Parameters<StateCreator<PostStore>>[0],

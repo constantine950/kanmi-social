@@ -1,9 +1,9 @@
 import express from "express";
-import authMiddleware from "../middlewares/auth.ts";
-import upload from "../middlewares/upload.ts";
-import sendMessage from "../controllers/messageController/sendMessage.ts";
-import getMessages from "../controllers/messageController/getMessages.ts";
-import deleteMessage from "../controllers/messageController/deleteMessage.ts";
+import authMiddleware from "../middlewares/auth.js";
+import upload from "../middlewares/upload.js";
+import sendMessage from "../controllers/messageController/sendMessage.js";
+import getMessages from "../controllers/messageController/getMessages.js";
+import deleteMessage from "../controllers/messageController/deleteMessage.js";
 
 const messageRoutes = express.Router();
 

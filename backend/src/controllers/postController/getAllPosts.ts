@@ -1,5 +1,5 @@
-import Post from "../../models/Post.ts";
-import catchAsync from "../../utils/catchAsync.ts";
+import Post from "../../models/Post.js";
+import catchAsync from "../../utils/catchAsync.js";
 
 const getAllPosts = catchAsync(async (req, res, next) => {
   const page = Number(req.query.page) || 1;

@@ -8,8 +8,8 @@ import {
 import type { Comment, CommentsModalProps } from "../types";
 import { useAuthStore } from "../zustand/authStore";
 import { useUIStore } from "../zustand/uiStore";
-import CommentCard from "./CommentCard";
-import CommentInput from "./CommentInput";
+import CommentCard from "./CommentCard.js";
+import CommentInput from "./CommentInput.js";
 
 export default function CommentsModal({
   postId,

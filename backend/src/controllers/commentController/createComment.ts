@@ -1,10 +1,10 @@
-import Comment from "../../models/Comment.ts";
-import Notification from "../../models/Notification.ts";
-import Post from "../../models/Post.ts";
-import User from "../../models/User.ts";
-import { getIO, onlineUsers } from "../../socket.ts";
-import AppError from "../../utils/AppError.ts";
-import catchAsync from "../../utils/catchAsync.ts";
+import Comment from "../../models/Comment.js";
+import Notification from "../../models/Notification.js";
+import Post from "../../models/Post.js";
+import User from "../../models/User.js";
+import { getIO, onlineUsers } from "../../socket.js";
+import AppError from "../../utils/AppError.js";
+import catchAsync from "../../utils/catchAsync.js";
 
 const createComment = catchAsync(async (req, res, next) => {
   const { text } = req.body;

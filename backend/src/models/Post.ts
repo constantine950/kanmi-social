@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { type CustomPostProperty } from "../types.ts";
+import { type CustomPostProperty } from "../types.js";
 
 const PostSchema = new mongoose.Schema<CustomPostProperty>(
   {

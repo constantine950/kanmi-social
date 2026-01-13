@@ -1,8 +1,8 @@
-import Message from "../../models/Message.ts";
-import { getIO, onlineUsers } from "../../socket.ts";
-import AppError from "../../utils/AppError.ts";
-import catchAsync from "../../utils/catchAsync.ts";
-import { uploadBufferToCloudinary } from "../../utils/cloudinaryHelper.ts";
+import Message from "../../models/Message.js";
+import { getIO, onlineUsers } from "../../socket.js";
+import AppError from "../../utils/AppError.js";
+import catchAsync from "../../utils/catchAsync.js";
+import { uploadBufferToCloudinary } from "../../utils/cloudinaryHelper.js";
 
 const sendMessage = catchAsync(async (req, res, next) => {
   const { text, receiver } = req.body;

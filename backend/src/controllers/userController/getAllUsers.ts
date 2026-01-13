@@ -1,5 +1,5 @@
-import User from "../../models/User.ts";
-import catchAsync from "../../utils/catchAsync.ts";
+import User from "../../models/User.js";
+import catchAsync from "../../utils/catchAsync.js";
 
 const getAllUsers = catchAsync(async (req, res) => {
   const userId = req.userInfo?.user_id;

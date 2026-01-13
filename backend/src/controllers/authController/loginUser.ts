@@ -1,8 +1,8 @@
-import User from "../../models/User.ts";
-import AppError from "../../utils/AppError.ts";
-import catchAsync from "../../utils/catchAsync.ts";
+import User from "../../models/User.js";
+import AppError from "../../utils/AppError.js";
+import catchAsync from "../../utils/catchAsync.js";
 import bcrypt from "bcryptjs";
-import { signAccessToken, signRefreshToken } from "../../utils/token.ts";
+import { signAccessToken, signRefreshToken } from "../../utils/token.js";
 
 const loginUser = catchAsync(async (req, res, next) => {
   const { username, password } = req.body;

@@ -1,7 +1,7 @@
-import Comment from "../../models/Comment.ts";
-import Notification from "../../models/Notification.ts";
-import AppError from "../../utils/AppError.ts";
-import catchAsync from "../../utils/catchAsync.ts";
+import Comment from "../../models/Comment.js";
+import Notification from "../../models/Notification.js";
+import AppError from "../../utils/AppError.js";
+import catchAsync from "../../utils/catchAsync.js";
 
 const deleteComment = catchAsync(async (req, res, next) => {
   const commentId = req.params.id;

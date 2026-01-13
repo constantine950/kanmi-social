@@ -1,12 +1,12 @@
 import jwt from "jsonwebtoken";
-import BlacklistedToken from "../models/BlacklistedToken.ts";
+import BlacklistedToken from "../models/BlacklistedToken.js";
 import {
   type CustomJwtPayload,
   type UserInfoReq,
   type UserRes,
-} from "../types.ts";
+} from "../types.js";
 import { type NextFunction, type Response } from "express";
-import AppError from "../utils/AppError.ts";
+import AppError from "../utils/AppError.js";
 
 const authMiddleware = async (
   req: UserInfoReq,

@@ -1,5 +1,5 @@
-import Post from "../../models/Post.ts";
-import catchAsync from "../../utils/catchAsync.ts";
+import Post from "../../models/Post.js";
+import catchAsync from "../../utils/catchAsync.js";
 
 const getPostsByUser = catchAsync(async (req, res, next) => {
   const userId = req.userInfo?.user_id;

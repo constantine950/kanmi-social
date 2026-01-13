@@ -1,7 +1,7 @@
 import type { StateCreator } from "zustand";
 import type { Post } from "../../types";
 import { createPostApi, updatePostApi, deletePostApi } from "../../api/postApi";
-import type { PostStore } from "./posttypes";
+import type { PostStore } from "./posttypes.js";
 
 export const createCrudActions = (
   set: Parameters<StateCreator<PostStore>>[0],

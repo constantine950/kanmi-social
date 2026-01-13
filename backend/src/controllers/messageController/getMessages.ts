@@ -1,6 +1,6 @@
-import Message from "../../models/Message.ts";
-import AppError from "../../utils/AppError.ts";
-import catchAsync from "../../utils/catchAsync.ts";
+import Message from "../../models/Message.js";
+import AppError from "../../utils/AppError.js";
+import catchAsync from "../../utils/catchAsync.js";
 
 const getMessages = catchAsync(async (req, res, next) => {
   const userId = req.userInfo?.user_id;

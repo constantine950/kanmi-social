@@ -1,9 +1,9 @@
 import express from "express";
-import upload from "../middlewares/upload.ts";
-import registerUser from "../controllers/authController/registerUser.ts";
-import loginUser from "../controllers/authController/loginUser.ts";
-import refreshToken from "../controllers/authController/refreshToken.ts";
-import logoutUser from "../controllers/authController/logoutUser.ts";
+import upload from "../middlewares/upload.js";
+import registerUser from "../controllers/authController/registerUser.js";
+import loginUser from "../controllers/authController/loginUser.js";
+import refreshToken from "../controllers/authController/refreshToken.js";
+import logoutUser from "../controllers/authController/logoutUser.js";
 
 const authRoutes = express.Router();
 

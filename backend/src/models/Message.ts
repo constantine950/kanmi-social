@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { type CustomMessageProperty } from "../types.ts";
+import { type CustomMessageProperty } from "../types.js";
 
 const MessageSchema = new mongoose.Schema<CustomMessageProperty>(
   {

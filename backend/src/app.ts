@@ -1,17 +1,19 @@
+import dotenv from "dotenv";
+dotenv.config();
 import express from "express";
 import http from "http";
 import cors from "cors";
-import connectDB from "./config/db.ts";
-import authRoutes from "./routes/authRoutes.ts";
-import errorHandler from "./middlewares/errorHandler.ts";
-import userRoutes from "./routes/userRoutes.ts";
-import postRoutes from "./routes/postRoutes.ts";
-import commentRoutes from "./routes/commentRoutes.ts";
-import notificationRoutes from "./routes/notificationRoutes.ts";
-import { initSocket } from "./socket.ts";
-import messageRoutes from "./routes/messageRoutes.ts";
+import connectDB from "./config/db.js";
+import authRoutes from "./routes/authRoutes.js";
+import errorHandler from "./middlewares/errorHandler.js";
+import userRoutes from "./routes/userRoutes.js";
+import postRoutes from "./routes/postRoutes.js";
+import commentRoutes from "./routes/commentRoutes.js";
+import notificationRoutes from "./routes/notificationRoutes.js";
+import { initSocket } from "./socket.js";
+import messageRoutes from "./routes/messageRoutes.js";
 import cookieParser from "cookie-parser";
-import { rateLimiter } from "./middlewares/rateLimiter.ts";
+import { rateLimiter } from "./middlewares/rateLimiter.js";
 
 connectDB();
 

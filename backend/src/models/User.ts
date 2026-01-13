@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import { type CustomProperty } from "../types.ts";
+import { type CustomProperty } from "../types.js";
 
 const UserSchema = new Schema<CustomProperty>(
   {

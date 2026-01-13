@@ -1,7 +1,7 @@
-import cloudinary from "../../config/cloudinary.ts";
-import Post from "../../models/Post.ts";
-import AppError from "../../utils/AppError.ts";
-import catchAsync from "../../utils/catchAsync.ts";
+import cloudinary from "../../config/cloudinary.js";
+import Post from "../../models/Post.js";
+import AppError from "../../utils/AppError.js";
+import catchAsync from "../../utils/catchAsync.js";
 
 const deletePost = catchAsync(async (req, res, next) => {
   const postId = req.params.id;

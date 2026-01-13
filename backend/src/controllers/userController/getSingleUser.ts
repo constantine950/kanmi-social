@@ -1,6 +1,6 @@
-import User from "../../models/User.ts";
-import AppError from "../../utils/AppError.ts";
-import catchAsync from "../../utils/catchAsync.ts";
+import User from "../../models/User.js";
+import AppError from "../../utils/AppError.js";
+import catchAsync from "../../utils/catchAsync.js";
 
 const getSingleUser = catchAsync(async (req, res, next) => {
   const userId = req.userInfo?.user_id;

@@ -1,6 +1,6 @@
-import AppError from "../../utils/AppError.ts";
-import catchAsync from "../../utils/catchAsync.ts";
-import { signAccessToken } from "../../utils/token.ts";
+import AppError from "../../utils/AppError.js";
+import catchAsync from "../../utils/catchAsync.js";
+import { signAccessToken } from "../../utils/token.js";
 import jwt from "jsonwebtoken";
 
 const refreshToken = catchAsync(async (req, res, next) => {

@@ -1,6 +1,6 @@
 import { Navigate, Outlet } from "react-router";
 import { useAuthStore } from "../zustand/authStore";
-import Spinner from "./Spinner";
+import Spinner from "./Spinner.js";
 
 export default function ProtectedRoute({ guestOnly = false }) {
   const { isAuthenticated, authLoading } = useAuthStore();

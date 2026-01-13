@@ -1,6 +1,6 @@
 import { io } from "socket.io-client";
-import { useAuthStore } from "./zustand/authStore";
-import { useUIStore } from "./zustand/uiStore";
+import { useAuthStore } from "./zustand/authStore.js";
+import { useUIStore } from "./zustand/uiStore.js";
 
 export const socket = io(
   import.meta.env.VITE_SOCKET_URL || "http://localhost:3000",
@@ -23,7 +23,7 @@ export const initSocket = () => {
     socket.emit("register", user.user_id);
   });
 
-  // 🔔 Notifications (recipient only)
+  //  Notifications (recipient only)
   socket.on("notification:new", (notif) => {
     const showToast = useUIStore.getState().showToast;
     showToast(notif.message, "info");

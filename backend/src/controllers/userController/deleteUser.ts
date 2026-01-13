@@ -1,9 +1,9 @@
-import cloudinary from "../../config/cloudinary.ts";
-import BlacklistedToken from "../../models/BlacklistedToken.ts";
-import Post from "../../models/Post.ts";
-import User from "../../models/User.ts";
-import AppError from "../../utils/AppError.ts";
-import catchAsync from "../../utils/catchAsync.ts";
+import cloudinary from "../../config/cloudinary.js";
+import BlacklistedToken from "../../models/BlacklistedToken.js";
+import Post from "../../models/Post.js";
+import User from "../../models/User.js";
+import AppError from "../../utils/AppError.js";
+import catchAsync from "../../utils/catchAsync.js";
 import jwt from "jsonwebtoken";
 
 const deleteUser = catchAsync(async (req, res, next) => {

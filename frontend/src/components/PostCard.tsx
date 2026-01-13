@@ -1,12 +1,12 @@
 import { memo, useRef, useState } from "react";
-import CommentsModal from "./CommentsModal";
+import CommentsModal from "./CommentsModal.js";
 import type { PostCardProps } from "../types";
 import { usePostStore } from "../zustand/postStore";
 import { useAuthStore } from "../zustand/authStore";
-import PostImg from "./PostImg";
-import OwnerActions from "./OwnerActions";
-import PostBody from "./PostBody";
-import PostActions from "./PostActions";
+import PostImg from "./PostImg.js";
+import OwnerActions from "./OwnerActions.js";
+import PostBody from "./PostBody.js";
+import PostActions from "./PostActions.js";
 
 const PostCard = memo(function PostCard({ post }: PostCardProps) {
   const storePost = usePostStore(

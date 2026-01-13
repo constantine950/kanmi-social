@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { type CustomNotificationProperty } from "../types.ts";
+import { type CustomNotificationProperty } from "../types.js";
 
 const NotificationSchema = new mongoose.Schema<CustomNotificationProperty>(
   {

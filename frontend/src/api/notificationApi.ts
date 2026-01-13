@@ -1,4 +1,4 @@
-import api from "./axios";
+import api from "./axios.js";
 
 export const getNotificationsApi = async () => {
   const res = await api.get("/notifications/get-not");

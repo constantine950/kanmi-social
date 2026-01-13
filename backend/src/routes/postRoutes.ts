@@ -1,13 +1,13 @@
 import express from "express";
-import authMiddleware from "../middlewares/auth.ts";
-import upload from "../middlewares/upload.ts";
-import createPost from "../controllers/postController/createPost.ts";
-import getAllPosts from "../controllers/postController/getAllPosts.ts";
-import getPostsByUser from "../controllers/postController/getPostsByUser.ts";
-import deletePost from "../controllers/postController/deletePost.ts";
-import updatePost from "../controllers/postController/updatePost.ts";
-import togglePostLike from "../controllers/postController/togglePostLike.ts";
-import getTrendingPosts from "../controllers/postController/getTrendingPosts.ts";
+import authMiddleware from "../middlewares/auth.js";
+import upload from "../middlewares/upload.js";
+import createPost from "../controllers/postController/createPost.js";
+import getAllPosts from "../controllers/postController/getAllPosts.js";
+import getPostsByUser from "../controllers/postController/getPostsByUser.js";
+import deletePost from "../controllers/postController/deletePost.js";
+import updatePost from "../controllers/postController/updatePost.js";
+import togglePostLike from "../controllers/postController/togglePostLike.js";
+import getTrendingPosts from "../controllers/postController/getTrendingPosts.js";
 
 const postRoutes = express.Router();
 

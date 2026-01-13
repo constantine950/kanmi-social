@@ -1,5 +1,5 @@
-import BlacklistedToken from "../../models/BlacklistedToken.ts";
-import catchAsync from "../../utils/catchAsync.ts";
+import BlacklistedToken from "../../models/BlacklistedToken.js";
+import catchAsync from "../../utils/catchAsync.js";
 import jwt from "jsonwebtoken";
 
 const logoutUser = catchAsync(async (req, res) => {

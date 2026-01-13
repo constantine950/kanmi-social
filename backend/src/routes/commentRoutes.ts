@@ -1,8 +1,8 @@
 import express from "express";
-import authMiddleware from "../middlewares/auth.ts";
-import createComment from "../controllers/commentController/createComment.ts";
-import getPostComments from "../controllers/commentController/getPostComments.ts";
-import deleteComment from "../controllers/commentController/deleteComment.ts";
+import authMiddleware from "../middlewares/auth.js";
+import createComment from "../controllers/commentController/createComment.js";
+import getPostComments from "../controllers/commentController/getPostComments.js";
+import deleteComment from "../controllers/commentController/deleteComment.js";
 
 const commentRoutes = express.Router();
 

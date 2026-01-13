@@ -1,5 +1,5 @@
-import Comment from "../../models/Comment.ts";
-import catchAsync from "../../utils/catchAsync.ts";
+import Comment from "../../models/Comment.js";
+import catchAsync from "../../utils/catchAsync.js";
 
 const getPostComments = catchAsync(async (req, res) => {
   const postId = req.params.id;

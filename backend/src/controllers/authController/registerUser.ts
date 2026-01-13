@@ -1,9 +1,9 @@
-import User from "../../models/User.ts";
-import { type CustomProperty } from "../../types.ts";
-import AppError from "../../utils/AppError.ts";
+import User from "../../models/User.js";
+import { type CustomProperty } from "../../types.js";
+import AppError from "../../utils/AppError.js";
 import bcrypt from "bcryptjs";
-import catchAsync from "../../utils/catchAsync.ts";
-import { uploadBufferToCloudinary } from "../../utils/cloudinaryHelper.ts";
+import catchAsync from "../../utils/catchAsync.js";
+import { uploadBufferToCloudinary } from "../../utils/cloudinaryHelper.js";
 
 const registerUser = catchAsync(async (req, res, next) => {
   const { username, password } = req.body;

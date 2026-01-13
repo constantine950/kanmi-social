@@ -1,13 +1,13 @@
 import express from "express";
-import authMiddleware from "../middlewares/auth.ts";
-import upload from "../middlewares/upload.ts";
-import getAllUsers from "../controllers/userController/getAllUsers.ts";
-import getSingleUser from "../controllers/userController/getSingleUser.ts";
-import updateUsername from "../controllers/userController/updateUsername.ts";
-import updateBio from "../controllers/userController/updateBio.ts";
-import updatePassword from "../controllers/userController/updatePassword.ts";
-import updateProfilePicture from "../controllers/userController/updateProfilePicture.ts";
-import deleteUser from "../controllers/userController/deleteUser.ts";
+import authMiddleware from "../middlewares/auth.js";
+import upload from "../middlewares/upload.js";
+import getAllUsers from "../controllers/userController/getAllUsers.js";
+import getSingleUser from "../controllers/userController/getSingleUser.js";
+import updateUsername from "../controllers/userController/updateUsername.js";
+import updateBio from "../controllers/userController/updateBio.js";
+import updatePassword from "../controllers/userController/updatePassword.js";
+import updateProfilePicture from "../controllers/userController/updateProfilePicture.js";
+import deleteUser from "../controllers/userController/deleteUser.js";
 
 const userRoutes = express.Router();
 

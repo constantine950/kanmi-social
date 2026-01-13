@@ -11,16 +11,11 @@ export const initSocket = (server: any) => {
   });
 
   io.on("connection", (socket) => {
-    console.log("User connected:", socket.id);
-
     socket.on("register", (userId) => {
       onlineUsers.set(userId, socket.id);
-      console.log(`User registered: ${userId}`);
     });
 
     socket.on("disconnect", () => {
-      console.log("User disconnected:", socket.id);
-
       for (const [userId, id] of onlineUsers.entries()) {
         if (id === socket.id) onlineUsers.delete(userId);
       }
