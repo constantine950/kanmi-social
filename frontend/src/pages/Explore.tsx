@@ -19,10 +19,12 @@ export default function Explore() {
   }, [trendingLoaded, fetchTrendingPosts]);
 
   return (
-    <div className="min-h-screen bg-black text-stone-200 px-6 md:px-14 pt-8">
+    <div className="min-h-screen bg-black text-stone-200 pt-5">
       <div className="max-w-xl mx-auto space-y-6">
-        <h1 className="text-3xl font-[Playfair_Display]">Explore</h1>
-        <p className="text-sm text-stone-400">
+        <h1 className="text-3xl pl-4 md:pl-0 font-[Playfair_Display]">
+          Explore
+        </h1>
+        <p className="text-sm pl-4 md:pl-0 text-stone-400">
           Trending posts based on engagement
         </p>
 
