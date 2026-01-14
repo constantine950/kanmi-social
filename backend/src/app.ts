@@ -14,6 +14,7 @@ import { initSocket } from "./socket.js";
 import messageRoutes from "./routes/messageRoutes.js";
 import cookieParser from "cookie-parser";
 import { rateLimiter } from "./middlewares/rateLimiter.js";
+import homeRoute from "./routes/homeRoute.js";
 
 connectDB();
 
@@ -53,6 +54,7 @@ app.use("/api", (req, res, next) => {
   next();
 });
 
+app.use(homeRoute);
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/posts", postRoutes);
