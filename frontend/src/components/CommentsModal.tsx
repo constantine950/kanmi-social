@@ -41,11 +41,7 @@ export default function CommentsModal({
   }, [isOpen, postId]);
 
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
+    document.body.style.overflow = isOpen ? "hidden" : "";
 
     return () => {
       document.body.style.overflow = "";
@@ -102,20 +98,27 @@ export default function CommentsModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-9999 flex justify-center items-end">
-      <div className="w-full max-w-md h-[85vh] bg-stone-950 border-t border-stone-800 rounded-t-2xl p-4 flex flex-col animate-slideUp">
+    <div className="fixed inset-0 z-9999 bg-black/70 backdrop-blur-sm flex md:items-end md:justify-center">
+      <div
+        className="
+        w-full h-full
+        md:h-[75vh] md:max-w-md
+        bg-stone-950
+        md:border md:border-stone-800
+        md:rounded-t-2xl
+        flex flex-col
+      "
+      >
         {/* HEADER */}
-        <div className="sticky top-0 bg-stone-950 z-10 border-b border-stone-800">
-          <div className="flex justify-between items-center pb-3">
-            <h2 className="text-lg font-semibold text-white">Comments</h2>
-            <button onClick={onClose}>
-              <X size={20} className="text-stone-300" />
-            </button>
-          </div>
+        <div className="flex items-center justify-between px-4 py-3 border-b border-stone-800">
+          <h2 className="text-lg font-semibold text-white">Comments</h2>
+          <button onClick={onClose}>
+            <X size={22} className="text-stone-300" />
+          </button>
         </div>
 
         {/* COMMENTS LIST */}
-        <div className="flex-1 overflow-y-auto mt-4 space-y-4">
+        <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
           {loading && (
             <p className="text-stone-400 text-sm text-center">
               Loading comments…
@@ -134,8 +137,8 @@ export default function CommentsModal({
             return (
               <CommentCard
                 key={c._id}
-                isOwner={isOwner}
                 c={c}
+                isOwner={isOwner}
                 deleteComment={deleteComment}
               />
             );
@@ -143,11 +146,13 @@ export default function CommentsModal({
         </div>
 
         {/* INPUT */}
-        <CommentInput
-          commentInput={commentInput}
-          setCommentInput={setCommentInput}
-          addComment={addComment}
-        />
+        <div className="border-t border-stone-800 px-4 py-3">
+          <CommentInput
+            commentInput={commentInput}
+            setCommentInput={setCommentInput}
+            addComment={addComment}
+          />
+        </div>
       </div>
     </div>
   );
