@@ -40,6 +40,18 @@ export default function CommentsModal({
     fetchComments();
   }, [isOpen, postId]);
 
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
   // ADD COMMENT
   const addComment = async () => {
     if (!commentInput.trim() || !currentUser) return;
@@ -90,14 +102,16 @@ export default function CommentsModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex justify-center items-end">
-      <div className="w-full max-w-md h-[75vh] bg-stone-950 border-t border-stone-800 rounded-t-2xl p-4 flex flex-col">
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-9999 flex justify-center items-end">
+      <div className="w-full max-w-md h-[85vh] bg-stone-950 border-t border-stone-800 rounded-t-2xl p-4 flex flex-col animate-slideUp">
         {/* HEADER */}
-        <div className="flex justify-between items-center pb-3 border-b border-stone-800">
-          <h2 className="text-lg font-semibold text-white">Comments</h2>
-          <button onClick={onClose}>
-            <X size={20} className="text-stone-300" />
-          </button>
+        <div className="sticky top-0 bg-stone-950 z-10 border-b border-stone-800">
+          <div className="flex justify-between items-center pb-3">
+            <h2 className="text-lg font-semibold text-white">Comments</h2>
+            <button onClick={onClose}>
+              <X size={20} className="text-stone-300" />
+            </button>
+          </div>
         </div>
 
         {/* COMMENTS LIST */}
@@ -119,6 +133,7 @@ export default function CommentsModal({
 
             return (
               <CommentCard
+                key={c._id}
                 isOwner={isOwner}
                 c={c}
                 deleteComment={deleteComment}
