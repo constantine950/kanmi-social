@@ -10,6 +10,7 @@ import { useAuthStore } from "../zustand/authStore";
 import { useUIStore } from "../zustand/uiStore";
 import CommentCard from "./CommentCard.js";
 import CommentInput from "./CommentInput.js";
+import { createPortal } from "react-dom";
 
 export default function CommentsModal({
   postId,
@@ -97,7 +98,7 @@ export default function CommentsModal({
 
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-9999 bg-black/70 backdrop-blur-sm flex md:items-end md:justify-center">
       <div
         className="
@@ -154,6 +155,7 @@ export default function CommentsModal({
           />
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
