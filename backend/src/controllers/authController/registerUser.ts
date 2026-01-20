@@ -9,6 +9,7 @@ const registerUser = catchAsync(async (req, res, next) => {
   const { username, password } = req.body;
 
   let imageData = null;
+
   if (req.file) {
     const uploaded = await uploadBufferToCloudinary(req.file.buffer);
     if (!uploaded) {
@@ -18,6 +19,11 @@ const registerUser = catchAsync(async (req, res, next) => {
     imageData = {
       url: uploaded.secure_url,
       publicId: uploaded.public_id,
+    };
+  } else {
+    imageData = {
+      url: `https://i.pravatar.cc/48?u=${username}`,
+      publicId: null,
     };
   }
 
@@ -37,7 +43,8 @@ const registerUser = catchAsync(async (req, res, next) => {
   const newlyCreatedUser: CustomProperty = new User({
     username,
     password: hashedpassword,
-    profilePicture: imageData,
+    profilePicture:
+      imageData === null ? "https://i.pravatar.cc/48?u=499470" : imageData,
   });
   await newlyCreatedUser.save();
 
