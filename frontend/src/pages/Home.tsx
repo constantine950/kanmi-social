@@ -14,9 +14,9 @@ export default function Home() {
   }, [fetchPosts, feedPosts.length]);
 
   return (
-    <div className="min-h-screen bg-black text-stone-200 font-[Inter] pt-5">
-      <div className="max-w-xl mx-auto w-full px-0">
-        <h1 className="text-2xl md:text-3xl pl-4 md:pl-0 font-[Playfair_Display] mb-6">
+    <div className="min-h-screen bg-black text-stone-200 font-[Inter]">
+      <div className="max-w-xl mx-auto w-full px-4 md:px-6 pt-5 md:pt-8">
+        <h1 className="text-2xl md:text-3xl font-[Playfair_Display] mb-6 md:mb-8">
           Home Feed
         </h1>
 

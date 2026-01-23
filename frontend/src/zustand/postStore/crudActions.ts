@@ -5,7 +5,7 @@ import type { PostStore } from "./posttypes";
 
 export const createCrudActions = (
   set: Parameters<StateCreator<PostStore>>[0],
-  get: Parameters<StateCreator<PostStore>>[1]
+  get: Parameters<StateCreator<PostStore>>[1],
 ) => ({
   createPost: async (formData: FormData) => {
     const res = await createPostApi(formData);
@@ -46,7 +46,7 @@ export const createCrudActions = (
                 uploadedBy: p.uploadedBy,
                 alreadyLiked: p.alreadyLiked,
               }
-            : p
+            : p,
         );
 
       set(() => ({
@@ -56,13 +56,13 @@ export const createCrudActions = (
           Object.entries(get().pageCache).map(([page, posts]) => [
             page,
             updatePosts(posts),
-          ])
+          ]),
         ),
         trendingCache: Object.fromEntries(
           Object.entries(get().trendingCache).map(([page, posts]) => [
             page,
             updatePosts(posts),
-          ])
+          ]),
         ),
       }));
     } finally {
@@ -84,13 +84,13 @@ export const createCrudActions = (
           Object.entries(state.pageCache).map(([page, posts]) => [
             page,
             filterPosts(posts),
-          ])
+          ]),
         ),
         trendingCache: Object.fromEntries(
           Object.entries(state.trendingCache).map(([page, posts]) => [
             page,
             filterPosts(posts),
-          ])
+          ]),
         ),
       }));
     } catch (err) {

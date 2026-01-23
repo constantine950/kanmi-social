@@ -18,7 +18,6 @@ function App() {
   const user = useAuthStore((s) => s.user);
   const setAuthLoading = useAuthStore((s) => s.setAuthLoading);
 
-  // Just stop the loading spinner immediately
   useEffect(() => {
     setAuthLoading(false);
   }, [setAuthLoading]);

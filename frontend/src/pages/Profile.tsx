@@ -177,64 +177,66 @@ export default function Profile() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-black text-stone-200 px-6 md:px-14 pt-10 font-[Inter]">
-      <ProfileHeader
-        user={user}
-        bio={bio}
-        setBio={setBio}
-        saveBio={saveBio}
-        setEditingBio={setEditingBio}
-        editingBio={editingBio}
-      />
+    <div className="min-h-screen bg-black text-stone-200 font-[Inter]">
+      <div className="max-w-2xl mx-auto px-4 md:px-6 pt-5 md:pt-10">
+        <ProfileHeader
+          user={user}
+          bio={bio}
+          setBio={setBio}
+          saveBio={saveBio}
+          setEditingBio={setEditingBio}
+          editingBio={editingBio}
+        />
 
-      {/* ---------- TABS ---------- */}
-      <div className="flex gap-8 border-b border-stone-800 mb-8 text-sm">
-        {(["posts", "settings"] as const).map((t) => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={`pb-3 ${
-              tab === t
-                ? "border-b-2 border-white text-white"
-                : "text-stone-400"
-            }`}
-          >
-            {t.toUpperCase()}
-          </button>
-        ))}
-      </div>
-
-      {/* ---------- POSTS (PostCards) ---------- */}
-      {tab === "posts" && (
-        <div className="space-y-4 max-w-2xl">
-          {posts.length === 0 && (
-            <p className="text-stone-500 text-sm">No posts yet</p>
-          )}
-
-          {posts.map((post) => (
-            <ProfilePostCard key={post._id} post={post} />
+        {/* ---------- TABS ---------- */}
+        <div className="flex gap-6 md:gap-8 border-b border-stone-800 mb-6 md:mb-8">
+          {(["posts", "settings"] as const).map((t) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={`pb-3 ${
+                tab === t
+                  ? "border-b-2 border-white text-white"
+                  : "text-stone-400"
+              }`}
+            >
+              {t.toUpperCase()}
+            </button>
           ))}
         </div>
-      )}
 
-      {/* ---------- SETTINGS ---------- */}
-      {tab === "settings" && (
-        <Settings
-          updateName={updateName}
-          updatePic={updatePic}
-          setNewPassword={setNewPassword}
-          setNewUsername={setNewUsername}
-          setOldPassword={setOldPassword}
-          newPassword={newPassword}
-          newUsername={newUsername}
-          loading={loading}
-          preview={preview}
-          onPicChange={onPicChange}
-          oldPassword={oldPassword}
-          changePassword={changePassword}
-          removeAccount={removeAccount}
-        />
-      )}
+        {/* ---------- POSTS (PostCards) ---------- */}
+        {tab === "posts" && (
+          <div className="space-y-4 max-w-2xl">
+            {posts.length === 0 && (
+              <p className="text-stone-500 text-sm">No posts yet</p>
+            )}
+
+            {posts.map((post) => (
+              <ProfilePostCard key={post._id} post={post} />
+            ))}
+          </div>
+        )}
+
+        {/* ---------- SETTINGS ---------- */}
+        {tab === "settings" && (
+          <Settings
+            updateName={updateName}
+            updatePic={updatePic}
+            setNewPassword={setNewPassword}
+            setNewUsername={setNewUsername}
+            setOldPassword={setOldPassword}
+            newPassword={newPassword}
+            newUsername={newUsername}
+            loading={loading}
+            preview={preview}
+            onPicChange={onPicChange}
+            oldPassword={oldPassword}
+            changePassword={changePassword}
+            removeAccount={removeAccount}
+          />
+        )}
+      </div>
     </div>
   );
 }

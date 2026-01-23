@@ -46,7 +46,7 @@ export interface Post {
     publicId: string;
   } | null;
   uploadedBy: User;
-  likes: string[]; // Array of user ID strings
+  likes: string[];
   alreadyLiked: boolean;
   createdAt: string;
 }

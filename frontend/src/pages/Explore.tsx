@@ -19,9 +19,9 @@ export default function Explore() {
   }, [trendingLoaded, fetchTrendingPosts]);
 
   return (
-    <div className="min-h-screen bg-black text-stone-200 pt-5">
-      <div className="max-w-xl mx-auto space-y-6">
-        <h1 className="text-3xl pl-4 md:pl-0 font-[Playfair_Display]">
+    <div className="min-h-screen bg-black text-stone-200 font-[Inter]">
+      <div className="max-w-xl mx-auto w-full px-4 md:px-6 pt-5 md:pt-8">
+        <h1 className="text-2xl md:text-3xl font-[Playfair_Display] mb-6 md:mb-8">
           Explore
         </h1>
         <p className="text-sm pl-4 md:pl-0 text-stone-400">
@@ -47,8 +47,8 @@ export default function Explore() {
                     {loading
                       ? "Loading more…"
                       : !trendingHasMore
-                      ? "🎉 All caught up!"
-                      : null}
+                        ? "🎉 All caught up!"
+                        : null}
                   </div>
                 ),
               }}

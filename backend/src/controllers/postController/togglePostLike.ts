@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import Notification from "../../models/Notification.js";
 import Post from "../../models/Post.js";
 import User from "../../models/User.js";
@@ -20,23 +21,28 @@ const togglePostLike = catchAsync(async (req, res, next) => {
 
   const actor = await User.findById(userId).select("username");
 
-  const alreadyLiked = post.likes.includes(userId);
+  // ✅ Correct ObjectId comparison
+  const alreadyLiked = post.likes.some((id) => id.toString() === userId);
 
-  // Unlike
+  /**
+   * =====================
+   * UNLIKE
+   * =====================
+   */
   if (alreadyLiked) {
-    post.likes = post.likes.filter((id) => id !== userId);
+    await Post.findByIdAndUpdate(postId, {
+      $pull: { likes: userId },
+    });
 
-    // Delete notification
     if (recipientId !== userId) {
       await Notification.deleteMany({
         recipient: recipientId,
         sender: userId,
-        postId: post._id,
+        postId,
         type: "like",
       });
     }
 
-    // Actor toast only
     const actorSocketId = onlineUsers.get(userId);
     if (actorSocketId) {
       io.to(actorSocketId).emit("toast:feedback", {
@@ -44,15 +50,21 @@ const togglePostLike = catchAsync(async (req, res, next) => {
       });
     }
   } else {
-    // LIKE
-    post.likes.push(userId);
+    /**
+     * =====================
+     * LIKE
+     * =====================
+     */
+    await Post.findByIdAndUpdate(postId, {
+      $addToSet: { likes: userId },
+    });
 
     if (recipientId !== userId) {
       await Notification.create({
         recipient: recipientId,
         sender: userId,
         type: "like",
-        postId: post._id,
+        postId,
         message: "liked your post",
       });
 
@@ -66,7 +78,6 @@ const togglePostLike = catchAsync(async (req, res, next) => {
       }
     }
 
-    // Actor toast
     const actorSocketId = onlineUsers.get(userId);
     if (actorSocketId) {
       io.to(actorSocketId).emit("toast:feedback", {
@@ -75,12 +86,13 @@ const togglePostLike = catchAsync(async (req, res, next) => {
     }
   }
 
-  await post.save();
+  // 🔁 fetch updated post
+  const updatedPost = await Post.findById(postId);
 
   res.status(200).json({
     success: true,
     data: {
-      likes: post.likes,
+      likes: updatedPost?.likes.map((id) => id.toString()) || [],
       alreadyLiked: !alreadyLiked,
     },
   });

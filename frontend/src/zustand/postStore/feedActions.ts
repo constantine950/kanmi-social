@@ -5,7 +5,7 @@ import type { PostStore } from "./posttypes";
 
 export const createFeedActions = (
   set: Parameters<StateCreator<PostStore>>[0],
-  get: Parameters<StateCreator<PostStore>>[1]
+  get: Parameters<StateCreator<PostStore>>[1],
 ) => ({
   fetchPosts: async () => {
     const { page, loading, feedPosts } = get();

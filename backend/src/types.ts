@@ -16,10 +16,10 @@ export interface CustomPostProperty extends Document {
   uploadedBy: Types.ObjectId;
   text: string;
   image: {
-    url: string;
-    publicId: string;
+    url: string | null;
+    publicId: string | null;
   };
-  likes: string[];
+  likes: Types.ObjectId[]; // ✅ FIXED
 }
 
 export interface CustomNotificationProperty extends Document {
