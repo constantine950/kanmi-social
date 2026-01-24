@@ -1,29 +1,36 @@
 import mongoose from "mongoose";
-import { type CustomPostProperty } from "../types.js";
 
-const PostSchema = new mongoose.Schema<CustomPostProperty>(
+const postSchema = new mongoose.Schema(
   {
+    text: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    image: {
+      url: String,
+      publicId: String,
+    },
     uploadedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
-    text: {
-      type: String,
-      required: true,
+    likes: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: "User",
+      default: [], // Ensure likes is always an array
     },
-    image: {
-      url: { type: String, default: null },
-      publicId: { type: String, default: null },
-    },
-    likes: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-      },
-    ],
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  },
 );
 
-export default mongoose.model<CustomPostProperty>("Post", PostSchema);
+// Add index for better query performance
+postSchema.index({ createdAt: -1 });
+postSchema.index({ uploadedBy: 1 });
+
+const Post = mongoose.model("Post", postSchema);
+
+export default Post;

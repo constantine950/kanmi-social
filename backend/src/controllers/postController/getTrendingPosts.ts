@@ -1,6 +1,6 @@
-import { Types } from "mongoose";
 import Post from "../../models/Post.js";
 import catchAsync from "../../utils/catchAsync.js";
+import { Types } from "mongoose";
 
 const getTrendingPosts = catchAsync(async (req, res, next) => {
   const userId = req.userInfo?.user_id; // Get current user ID
@@ -43,9 +43,14 @@ const getTrendingPosts = catchAsync(async (req, res, next) => {
   const postsWithLikeStatus = posts.map((post) => ({
     ...post,
     alreadyLiked: userId
-      ? post.likes.some((id: Types.ObjectId) => id.toString() === userId)
+      ? post.likes?.some(
+          (id: Types.ObjectId) => id && id.toString() === userId,
+        ) || false
       : false,
-    likes: post.likes.map((id: Types.ObjectId) => id.toString()),
+    likes:
+      post.likes
+        ?.filter((id: Types.ObjectId) => id)
+        .map((id: Types.ObjectId) => id.toString()) || [],
   }));
 
   res.status(200).json({

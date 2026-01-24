@@ -26,9 +26,12 @@ export const createLikeActions = (
         if (p._id !== postId) return p;
 
         const isLiked = p.alreadyLiked;
+        const safeLikes = Array.isArray(p.likes)
+          ? p.likes.filter((id) => id)
+          : [];
         const newLikes = isLiked
-          ? p.likes.filter((id) => id !== currentUserId)
-          : [...p.likes, currentUserId];
+          ? safeLikes.filter((id) => id !== currentUserId)
+          : [...safeLikes, currentUserId];
 
         return {
           ...p,
@@ -66,7 +69,7 @@ export const createLikeActions = (
           p._id === postId
             ? {
                 ...p,
-                likes,
+                likes: Array.isArray(likes) ? likes.filter((id) => id) : [],
                 alreadyLiked,
               }
             : p,
@@ -97,9 +100,12 @@ export const createLikeActions = (
           if (p._id !== postId) return p;
 
           const isLiked = p.alreadyLiked;
+          const safeLikes = Array.isArray(p.likes)
+            ? p.likes.filter((id) => id)
+            : [];
           const revertedLikes = isLiked
-            ? p.likes.filter((id) => id !== currentUserId)
-            : [...p.likes, currentUserId];
+            ? safeLikes.filter((id) => id !== currentUserId)
+            : [...safeLikes, currentUserId];
 
           return {
             ...p,

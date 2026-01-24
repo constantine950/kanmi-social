@@ -18,9 +18,9 @@ const getAllPosts = catchAsync(async (req, res, next) => {
   const postsWithLikeStatus = posts.map((post) => ({
     ...post,
     alreadyLiked: userId
-      ? post.likes.some((id) => id.toString() === userId)
+      ? post.likes?.some((id) => id && id.toString() === userId) || false
       : false,
-    likes: post.likes.map((id) => id.toString()),
+    likes: post.likes?.filter((id) => id).map((id) => id.toString()) || [],
   }));
 
   res.status(200).json({
