@@ -21,14 +21,8 @@ const togglePostLike = catchAsync(async (req, res, next) => {
 
   const actor = await User.findById(userId).select("username");
 
-  // ✅ Correct ObjectId comparison
   const alreadyLiked = post.likes.some((id) => id.toString() === userId);
 
-  /**
-   * =====================
-   * UNLIKE
-   * =====================
-   */
   if (alreadyLiked) {
     await Post.findByIdAndUpdate(postId, {
       $pull: { likes: userId },
@@ -50,11 +44,6 @@ const togglePostLike = catchAsync(async (req, res, next) => {
       });
     }
   } else {
-    /**
-     * =====================
-     * LIKE
-     * =====================
-     */
     await Post.findByIdAndUpdate(postId, {
       $addToSet: { likes: userId },
     });
@@ -86,7 +75,6 @@ const togglePostLike = catchAsync(async (req, res, next) => {
     }
   }
 
-  // 🔁 fetch updated post
   const updatedPost = await Post.findById(postId);
 
   res.status(200).json({

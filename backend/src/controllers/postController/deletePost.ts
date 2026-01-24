@@ -21,7 +21,8 @@ const deletePost = catchAsync(async (req, res, next) => {
     });
   }
 
-  if (!post.image === null) {
+  // Delete image from Cloudinary if it exists
+  if (post.image?.publicId) {
     await cloudinary.uploader.destroy(post.image.publicId);
   }
 
