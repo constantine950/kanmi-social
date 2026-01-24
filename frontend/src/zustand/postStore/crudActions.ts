@@ -10,11 +10,8 @@ export const createCrudActions = (
   createPost: async (formData: FormData) => {
     const res = await createPostApi(formData);
 
-    const newPost: Post = {
-      ...res.data,
-      alreadyLiked: false,
-      likes: [],
-    };
+    // Use the data directly from backend response
+    const newPost: Post = res.data;
 
     set((state) => ({
       feedPosts: [newPost, ...state.feedPosts],
@@ -42,9 +39,13 @@ export const createCrudActions = (
           p._id === postId
             ? {
                 ...p,
-                ...res.data,
+                text: res.data.text,
+                image: res.data.image,
+                // Keep existing fields
                 uploadedBy: p.uploadedBy,
-                alreadyLiked: p.alreadyLiked,
+                likes: res.data.likes || p.likes,
+                alreadyLiked: res.data.alreadyLiked ?? p.alreadyLiked,
+                createdAt: p.createdAt,
               }
             : p,
         );

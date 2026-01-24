@@ -6,7 +6,7 @@ export const socket = io(
   import.meta.env.VITE_SOCKET_URL || "https://kanmi-social.onrender.com",
   {
     autoConnect: false,
-  }
+  },
 );
 
 let initialized = false;

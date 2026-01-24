@@ -1,46 +1,64 @@
 import Post from "../../models/Post.js";
 import AppError from "../../utils/AppError.js";
 import catchAsync from "../../utils/catchAsync.js";
-import { uploadBufferToCloudinary } from "../../utils/cloudinaryHelper.js";
+import { v2 as cloudinary } from "cloudinary";
 
 const createPost = catchAsync(async (req, res, next) => {
-  const { text } = req.body;
   const userId = req.userInfo?.user_id;
+  const { text } = req.body;
 
-  if (!text) {
+  if (!userId) return next(new AppError("Unauthorized", 401));
+  if (!text || text.trim().length === 0) {
     return next(new AppError("Post text is required", 400));
   }
 
   let imageData = null;
 
+  // Upload image to cloudinary if provided
   if (req.file) {
-    const uploaded = await uploadBufferToCloudinary(req.file.buffer);
-
-    if (!uploaded) {
-      return next(new AppError("Not able to upload image. Try again", 500));
-    }
+    const result = await cloudinary.uploader.upload(req.file.path, {
+      folder: "kanmi_posts",
+    });
 
     imageData = {
-      url: uploaded.secure_url,
-      publicId: uploaded.public_id,
+      url: result.secure_url,
+      publicId: result.public_id,
     };
   }
 
+  // Create post
   const post = await Post.create({
-    uploadedBy: userId,
     text,
     image: imageData,
+    uploadedBy: userId,
   });
 
+  // Populate uploadedBy field
   const populatedPost = await post.populate(
     "uploadedBy",
-    "username profilePicture"
+    "username profilePicture",
   );
 
+  // Type assertion for populated uploadedBy
+  const uploadedByUser = populatedPost.uploadedBy as any;
+
+  // Return post with proper structure
   res.status(201).json({
     success: true,
-    message: "Post created",
-    data: populatedPost,
+    message: "Post created successfully",
+    data: {
+      _id: populatedPost._id,
+      text: populatedPost.text,
+      image: populatedPost.image,
+      uploadedBy: {
+        _id: uploadedByUser._id,
+        username: uploadedByUser.username,
+        profilePicture: uploadedByUser.profilePicture,
+      },
+      likes: [],
+      alreadyLiked: false,
+      createdAt: (populatedPost as any).createdAt,
+    },
   });
 });
 

@@ -14,5 +14,4 @@ export const usePostStore = create<PostStore>((set, get) => ({
   ...createLikeActions(set, get),
 }));
 
-// Re-export types
 export type { PostState, PostActions } from "./posttypes.js";

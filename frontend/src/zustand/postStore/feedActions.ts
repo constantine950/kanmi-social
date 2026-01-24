@@ -14,7 +14,7 @@ export const createFeedActions = (
     set({ loading: true });
 
     try {
-      // Fetch next page
+      // Fetch next page - posts already include alreadyLiked from backend
       const posts = await getPostsApi(page);
 
       let newFeedPosts = [...feedPosts, ...posts];
@@ -28,6 +28,8 @@ export const createFeedActions = (
       }
 
       set({ feedPosts: newFeedPosts });
+    } catch (error) {
+      console.error("Failed to fetch posts:", error);
     } finally {
       set({ loading: false });
     }

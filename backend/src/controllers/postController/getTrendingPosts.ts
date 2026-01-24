@@ -1,14 +1,22 @@
-import mongoose from "mongoose";
-import catchAsync from "../../utils/catchAsync.js";
+import { Types } from "mongoose";
 import Post from "../../models/Post.js";
+import catchAsync from "../../utils/catchAsync.js";
 
-const getTrendingPosts = catchAsync(async (req, res) => {
-  const userId = req.userInfo!.user_id;
+const getTrendingPosts = catchAsync(async (req, res, next) => {
+  const userId = req.userInfo?.user_id; // Get current user ID
   const page = Number(req.query.page) || 1;
-  const limit = Number(req.query.limit) || 10;
+  const limit = Number(req.query.limit) || 5;
   const skip = (page - 1) * limit;
 
-  const trending = await Post.aggregate([
+  const posts = await Post.aggregate([
+    {
+      $addFields: {
+        likesCount: { $size: "$likes" },
+      },
+    },
+    { $sort: { likesCount: -1, createdAt: -1 } },
+    { $skip: skip },
+    { $limit: limit },
     {
       $lookup: {
         from: "users",
@@ -18,56 +26,33 @@ const getTrendingPosts = catchAsync(async (req, res) => {
       },
     },
     { $unwind: "$uploadedBy" },
-
-    {
-      $lookup: {
-        from: "comments",
-        localField: "_id",
-        foreignField: "postId",
-        as: "comments",
-      },
-    },
-
-    {
-      $addFields: {
-        alreadyLiked: {
-          $in: [
-            new mongoose.Types.ObjectId(userId),
-            { $ifNull: ["$likes", []] },
-          ],
-        },
-        score: {
-          $add: [
-            { $size: { $ifNull: ["$likes", []] } },
-            {
-              $multiply: [{ $size: { $ifNull: ["$comments", []] } }, 2],
-            },
-          ],
-        },
-      },
-    },
-
-    { $sort: { score: -1, createdAt: -1 } },
-
-    { $skip: skip },
-    { $limit: limit },
-
     {
       $project: {
         text: 1,
         image: 1,
-        uploadedBy: 1,
         likes: 1,
-        alreadyLiked: 1,
         createdAt: 1,
+        "uploadedBy._id": 1,
+        "uploadedBy.username": 1,
+        "uploadedBy.profilePicture": 1,
       },
     },
   ]);
 
+  // Add alreadyLiked field for each post
+  const postsWithLikeStatus = posts.map((post) => ({
+    ...post,
+    alreadyLiked: userId
+      ? post.likes.some((id: Types.ObjectId) => id.toString() === userId)
+      : false,
+    likes: post.likes.map((id: Types.ObjectId) => id.toString()),
+  }));
+
   res.status(200).json({
     success: true,
-    data: trending,
-    hasMore: trending.length === limit,
+    posts: postsWithLikeStatus,
+    page,
+    hasMore: posts.length === limit,
   });
 });
 

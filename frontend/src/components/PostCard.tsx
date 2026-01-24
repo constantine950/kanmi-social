@@ -12,7 +12,7 @@ const PostCard = memo(function PostCard({ post }: PostCardProps) {
   const storePost = usePostStore(
     (s) =>
       s.feedPosts.find((p) => p._id === post._id) ||
-      s.trendingPosts.find((p) => p._id === post._id)
+      s.trendingPosts.find((p) => p._id === post._id),
   );
 
   const toggleLike = usePostStore((s) => s.toggleLike);
@@ -29,7 +29,12 @@ const PostCard = memo(function PostCard({ post }: PostCardProps) {
   if (!storePost) return null;
 
   const { text, image, uploadedBy, createdAt, likes, alreadyLiked } = storePost;
-  const isOwner = !!uploadedBy && currentUser?.user_id === uploadedBy._id;
+
+  // Fix: Compare string IDs properly
+  const isOwner =
+    !!uploadedBy &&
+    !!currentUser &&
+    uploadedBy._id.toString() === currentUser.user_id.toString();
 
   const startEdit = () => {
     setEditText(text);

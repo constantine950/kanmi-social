@@ -19,7 +19,7 @@ export interface CustomPostProperty extends Document {
     url: string | null;
     publicId: string | null;
   };
-  likes: Types.ObjectId[]; // ✅ FIXED
+  likes: Types.ObjectId[];
 }
 
 export interface CustomNotificationProperty extends Document {
@@ -69,6 +69,7 @@ export interface UserRes {
   success: boolean;
   message?: string;
   hasMore?: boolean;
+  page?: number;
   posts?: any;
   data?: any;
   user?: any;

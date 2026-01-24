@@ -1,4 +1,3 @@
-import mongoose from "mongoose";
 import Notification from "../../models/Notification.js";
 import Post from "../../models/Post.js";
 import User from "../../models/User.js";
@@ -18,17 +17,19 @@ const togglePostLike = catchAsync(async (req, res, next) => {
 
   const recipientId = post.uploadedBy._id.toString();
   const recipientUsername = (post.uploadedBy as any).username;
+  const isOwnPost = recipientId === userId;
 
   const actor = await User.findById(userId).select("username");
-
   const alreadyLiked = post.likes.some((id) => id.toString() === userId);
 
   if (alreadyLiked) {
+    // UNLIKE
     await Post.findByIdAndUpdate(postId, {
       $pull: { likes: userId },
     });
 
-    if (recipientId !== userId) {
+    // Only delete notification if not own post
+    if (!isOwnPost) {
       await Notification.deleteMany({
         recipient: recipientId,
         sender: userId,
@@ -37,18 +38,23 @@ const togglePostLike = catchAsync(async (req, res, next) => {
       });
     }
 
+    // Send feedback to actor
     const actorSocketId = onlineUsers.get(userId);
     if (actorSocketId) {
-      io.to(actorSocketId).emit("toast:feedback", {
-        message: `You unliked ${recipientUsername}'s post`,
-      });
+      const message = isOwnPost
+        ? "You unliked your own post"
+        : `You unliked ${recipientUsername}'s post`;
+
+      io.to(actorSocketId).emit("toast:feedback", { message });
     }
   } else {
+    // LIKE
     await Post.findByIdAndUpdate(postId, {
       $addToSet: { likes: userId },
     });
 
-    if (recipientId !== userId) {
+    // Only create notification if not own post
+    if (!isOwnPost) {
       await Notification.create({
         recipient: recipientId,
         sender: userId,
@@ -57,6 +63,7 @@ const togglePostLike = catchAsync(async (req, res, next) => {
         message: "liked your post",
       });
 
+      // Send notification to recipient
       const recipientSocketId = onlineUsers.get(recipientId);
       if (recipientSocketId) {
         io.to(recipientSocketId).emit("notification:new", {
@@ -67,11 +74,14 @@ const togglePostLike = catchAsync(async (req, res, next) => {
       }
     }
 
+    // Send feedback to actor
     const actorSocketId = onlineUsers.get(userId);
     if (actorSocketId) {
-      io.to(actorSocketId).emit("toast:feedback", {
-        message: `You liked ${recipientUsername}'s post ❤️`,
-      });
+      const message = isOwnPost
+        ? "You liked your own post ❤️"
+        : `You liked ${recipientUsername}'s post ❤️`;
+
+      io.to(actorSocketId).emit("toast:feedback", { message });
     }
   }
 

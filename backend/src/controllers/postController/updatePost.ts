@@ -1,62 +1,57 @@
-import cloudinary from "../../config/cloudinary.js";
 import Post from "../../models/Post.js";
 import AppError from "../../utils/AppError.js";
 import catchAsync from "../../utils/catchAsync.js";
-import { uploadBufferToCloudinary } from "../../utils/cloudinaryHelper.js";
+import { v2 as cloudinary } from "cloudinary";
 
 const updatePost = catchAsync(async (req, res, next) => {
   const postId = req.params.id;
-  const { text } = req.body;
   const userId = req.userInfo?.user_id;
+  const { text } = req.body;
 
-  if (!text || !text.trim()) {
-    return next(new AppError("Post text is required", 400));
-  }
+  if (!userId) return next(new AppError("Unauthorized", 401));
 
   const post = await Post.findById(postId);
-  if (!post) {
-    return next(new AppError("Post not found", 404));
-  }
+  if (!post) return next(new AppError("Post not found", 404));
 
+  // VERIFY OWNERSHIP
   if (post.uploadedBy.toString() !== userId) {
-    return res.status(403).json({
-      success: false,
-      message: "Not permitted, you do not own this post",
-    });
+    return next(new AppError("You can only edit your own posts", 403));
   }
 
-  let imageData = post.image ?? null;
+  // Update text if provided
+  if (text !== undefined) {
+    post.text = text;
+  }
 
-  // Handle image replacement
+  // Update image if provided
   if (req.file) {
+    // Delete old image from cloudinary if exists
     if (post.image?.publicId) {
       await cloudinary.uploader.destroy(post.image.publicId);
     }
 
-    const uploaded = await uploadBufferToCloudinary(req.file.buffer);
-    if (!uploaded) {
-      return next(new AppError("Image upload failed. Try again", 500));
-    }
+    const result = await cloudinary.uploader.upload(req.file.path, {
+      folder: "kanmi_posts",
+    });
 
-    imageData = {
-      url: uploaded.secure_url,
-      publicId: uploaded.public_id,
+    post.image = {
+      url: result.secure_url,
+      publicId: result.public_id,
     };
   }
 
-  const updatedPost = await Post.findByIdAndUpdate(
-    postId,
-    {
-      text: text.trim(),
-      image: imageData,
-    },
-    { new: true, runValidators: true }
-  ).populate("uploadedBy", "username profilePicture");
+  await post.save();
 
   res.status(200).json({
     success: true,
     message: "Post updated successfully",
-    data: updatedPost,
+    data: {
+      _id: post._id,
+      text: post.text,
+      image: post.image,
+      likes: post.likes,
+      alreadyLiked: post.likes.some((id) => id.toString() === userId),
+    },
   });
 });
 

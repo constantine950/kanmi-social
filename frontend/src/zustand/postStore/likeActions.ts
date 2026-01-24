@@ -1,100 +1,134 @@
 import type { StateCreator } from "zustand";
 import type { Post } from "../../types";
 import { toggleLikeApi } from "../../api/postApi";
-import { useAuthStore } from "../authStore";
 import type { PostStore } from "./posttypes";
+import { useAuthStore } from "../authStore";
 
 export const createLikeActions = (
   set: Parameters<StateCreator<PostStore>>[0],
   get: Parameters<StateCreator<PostStore>>[1],
 ) => ({
   toggleLike: async (postId: string) => {
-    const userId = useAuthStore.getState().user?.user_id;
-    if (!userId) return;
-
+    // Prevent double-clicking
     if (get().likingPosts.has(postId)) return;
 
-    const post = [...get().feedPosts, ...get().trendingPosts].find(
-      (p) => p._id === postId,
-    );
-    if (!post) return;
+    // Get current user ID
+    const currentUserId = useAuthStore.getState().user?.user_id;
+    if (!currentUserId) return;
 
-    const wasLiked = post.alreadyLiked;
-    const previousLikes = [...post.likes];
-
-    // 🔒 lock
     set((state) => ({
       likingPosts: new Set(state.likingPosts).add(postId),
     }));
 
-    // ✅ OPTIMISTIC UPDATE (FIXED)
-    set((state) => {
-      const update = (posts: Post[]) =>
+    // OPTIMISTIC UPDATE - Update UI immediately
+    const optimisticUpdate = (posts: Post[]) =>
+      posts.map((p) => {
+        if (p._id !== postId) return p;
+
+        const isLiked = p.alreadyLiked;
+        const newLikes = isLiked
+          ? p.likes.filter((id) => id !== currentUserId)
+          : [...p.likes, currentUserId];
+
+        return {
+          ...p,
+          likes: newLikes,
+          alreadyLiked: !isLiked,
+        };
+      });
+
+    // Apply optimistic update immediately
+    set((state) => ({
+      feedPosts: optimisticUpdate(state.feedPosts),
+      trendingPosts: optimisticUpdate(state.trendingPosts),
+      pageCache: Object.fromEntries(
+        Object.entries(state.pageCache).map(([page, posts]) => [
+          page,
+          optimisticUpdate(posts),
+        ]),
+      ),
+      trendingCache: Object.fromEntries(
+        Object.entries(state.trendingCache).map(([page, posts]) => [
+          page,
+          optimisticUpdate(posts),
+        ]),
+      ),
+    }));
+
+    try {
+      // Sync with server in background
+      const response = await toggleLikeApi(postId);
+      const { likes, alreadyLiked } = response;
+
+      // Reconcile with server response
+      const serverUpdate = (posts: Post[]) =>
+        posts.map((p) =>
+          p._id === postId
+            ? {
+                ...p,
+                likes,
+                alreadyLiked,
+              }
+            : p,
+        );
+
+      set((state) => ({
+        feedPosts: serverUpdate(state.feedPosts),
+        trendingPosts: serverUpdate(state.trendingPosts),
+        pageCache: Object.fromEntries(
+          Object.entries(state.pageCache).map(([page, posts]) => [
+            page,
+            serverUpdate(posts),
+          ]),
+        ),
+        trendingCache: Object.fromEntries(
+          Object.entries(state.trendingCache).map(([page, posts]) => [
+            page,
+            serverUpdate(posts),
+          ]),
+        ),
+      }));
+    } catch (err) {
+      console.error("Failed to toggle like:", err);
+
+      // ROLLBACK on error
+      const rollback = (posts: Post[]) =>
         posts.map((p) => {
           if (p._id !== postId) return p;
 
-          const isLiked = p.likes.includes(userId); // 👈 SOURCE OF TRUTH
+          const isLiked = p.alreadyLiked;
+          const revertedLikes = isLiked
+            ? p.likes.filter((id) => id !== currentUserId)
+            : [...p.likes, currentUserId];
 
           return {
             ...p,
+            likes: revertedLikes,
             alreadyLiked: !isLiked,
-            likes: isLiked
-              ? p.likes.filter((id) => id !== userId) // UNLIKE
-              : [...p.likes, userId], // LIKE
           };
         });
 
-      return {
-        feedPosts: update(state.feedPosts),
-        trendingPosts: update(state.trendingPosts),
-      };
-    });
-
-    try {
-      const response = await toggleLikeApi(postId);
-
-      // ✅ SERVER SYNC (AGAIN USING CURRENT STATE)
-      set((state) => {
-        const update = (posts: Post[]) =>
-          posts.map((p) =>
-            p._id === postId
-              ? {
-                  ...p,
-                  alreadyLiked: response.alreadyLiked,
-                  likes: response.likes,
-                }
-              : p,
-          );
-
-        return {
-          feedPosts: update(state.feedPosts),
-          trendingPosts: update(state.trendingPosts),
-        };
-      });
-    } catch {
-      // 🔁 ROLLBACK
-      set((state) => {
-        const rollback = (posts: Post[]) =>
-          posts.map((p) =>
-            p._id === postId
-              ? {
-                  ...p,
-                  alreadyLiked: wasLiked,
-                  likes: previousLikes,
-                }
-              : p,
-          );
-
-        return {
-          feedPosts: rollback(state.feedPosts),
-          trendingPosts: rollback(state.trendingPosts),
-        };
-      });
+      set((state) => ({
+        feedPosts: rollback(state.feedPosts),
+        trendingPosts: rollback(state.trendingPosts),
+        pageCache: Object.fromEntries(
+          Object.entries(state.pageCache).map(([page, posts]) => [
+            page,
+            rollback(posts),
+          ]),
+        ),
+        trendingCache: Object.fromEntries(
+          Object.entries(state.trendingCache).map(([page, posts]) => [
+            page,
+            rollback(posts),
+          ]),
+        ),
+      }));
     } finally {
       set((state) => {
-        const next = new Set(state.likingPosts);
-        next.delete(postId);
-        return { likingPosts: next };
+        const newLikingPosts = new Set(state.likingPosts);
+        newLikingPosts.delete(postId);
+        return { likingPosts: newLikingPosts };
       });
     }
   },

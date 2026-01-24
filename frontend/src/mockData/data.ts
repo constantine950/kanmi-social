@@ -11,7 +11,7 @@ export const features: Feature[] = [
   },
   {
     title: "Smart Discovery",
-    text: "See more of what matters — less noise.",
+    text: "See more of what matters, less noise.",
   },
   {
     title: "Minimal Profiles",

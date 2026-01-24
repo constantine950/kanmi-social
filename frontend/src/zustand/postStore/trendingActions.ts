@@ -1,6 +1,5 @@
 import type { StateCreator } from "zustand";
 import { getTrendingPostsApi } from "../../api/postApi";
-import { mergePosts } from "../../utils/merge";
 import type { PostStore } from "./posttypes";
 
 export const createTrendingActions = (
@@ -8,39 +7,23 @@ export const createTrendingActions = (
   get: Parameters<StateCreator<PostStore>>[1],
 ) => ({
   fetchTrendingPosts: async () => {
-    const {
-      trendingPage,
-      trendingCache,
-      trendingHasMore,
-      loading,
-      trendingPosts,
-    } = get();
-
-    if (!trendingHasMore || loading) return;
-
-    if (trendingCache[trendingPage]) {
-      set((state) => ({
-        trendingPosts: mergePosts(trendingPosts, trendingCache[trendingPage]),
-        trendingPage: state.trendingPage + 1,
-      }));
-      return;
-    }
+    const { trendingPage, loading } = get();
+    if (loading) return;
 
     set({ loading: true });
 
     try {
-      const res = await getTrendingPostsApi(trendingPage);
+      const response = await getTrendingPostsApi(trendingPage);
+      const posts = response.posts;
 
       set((state) => ({
-        trendingPosts: mergePosts(trendingPosts, res.data),
-        trendingCache: {
-          ...state.trendingCache,
-          [trendingPage]: res.data,
-        },
-        trendingPage: state.trendingPage + 1,
-        trendingHasMore: res.hasMore,
+        trendingPosts: [...state.trendingPosts, ...posts],
+        trendingPage: trendingPage + 1,
+        trendingHasMore: response.hasMore,
         trendingLoaded: true,
       }));
+    } catch (error) {
+      console.error("Failed to fetch trending posts:", error);
     } finally {
       set({ loading: false });
     }
@@ -53,7 +36,5 @@ export const createTrendingActions = (
       trendingHasMore: true,
       trendingCache: {},
       trendingLoaded: false,
-      likingPosts: new Set(),
-      updatingPostId: null,
     }),
 });

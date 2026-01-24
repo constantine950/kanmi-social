@@ -26,7 +26,7 @@ export default function LandingPage() {
             </h1>
 
             <p className="text-[13px] text-stone-400 max-w-sm leading-relaxed font-light">
-              Kanmi reduces social noise to its purest form — elegant posts,
+              Kanmi reduces social noise to its purest form, elegant posts,
               quiet UI, and a distraction-free feed.
             </p>
 
@@ -54,7 +54,7 @@ export default function LandingPage() {
             {/* MOCK FEED */}
             <div className="relative h-full w-full p-4 text-stone-400 flex flex-col justify-between overflow-y-auto">
               <div className="text-[10px] font-mono uppercase tracking-wide mb-4">
-                Kanmi — Preview
+                Kanmi Preview
               </div>
 
               {/* POSTS */}
