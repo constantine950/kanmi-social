@@ -20,7 +20,7 @@ export const initSocket = () => {
   socket.connect();
 
   socket.on("connect", () => {
-    socket.emit("register", user.user_id);
+    socket.emit("register", user.id);
   });
 
   //  Notifications (recipient only)

@@ -58,7 +58,7 @@ export default function CommentsModal({
       text: commentInput,
       createdAt: new Date().toISOString(),
       userId: {
-        _id: currentUser.user_id,
+        _id: currentUser.id,
         username: currentUser.username,
         profilePicture: currentUser.profilePicture,
       },
@@ -71,11 +71,11 @@ export default function CommentsModal({
       const saved = await addCommentApi(postId, optimisticComment.text);
 
       setComments((prev) =>
-        prev.map((c) => (c._id === optimisticComment._id ? saved : c))
+        prev.map((c) => (c._id === optimisticComment._id ? saved : c)),
       );
     } catch {
       setComments((prev) =>
-        prev.filter((c) => c._id !== optimisticComment._id)
+        prev.filter((c) => c._id !== optimisticComment._id),
       );
       showToast("Failed to post comment", "error");
     }
@@ -133,7 +133,7 @@ export default function CommentsModal({
           )}
 
           {comments.map((c) => {
-            const isOwner = c.userId._id === currentUser?.user_id;
+            const isOwner = c.userId._id === currentUser?.id;
 
             return (
               <CommentCard
@@ -156,6 +156,6 @@ export default function CommentsModal({
         </div>
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }

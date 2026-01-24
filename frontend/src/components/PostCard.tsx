@@ -28,13 +28,20 @@ const PostCard = memo(function PostCard({ post }: PostCardProps) {
 
   if (!storePost) return null;
 
-  const { text, image, uploadedBy, createdAt, likes, alreadyLiked } = storePost;
+  // Sanitize post data
+  const { text, image, uploadedBy, createdAt } = storePost;
+  const likes = Array.isArray(storePost.likes)
+    ? storePost.likes.filter((id) => id && typeof id === "string")
+    : [];
+  const alreadyLiked = storePost.alreadyLiked ?? false;
 
-  // Fix: Compare string IDs properly
-  const isOwner =
-    !!uploadedBy &&
-    !!currentUser &&
-    uploadedBy._id.toString() === currentUser.user_id.toString();
+  // Fix: Use 'id' field instead of 'user_id'
+  const isOwner = !!(
+    uploadedBy?._id &&
+    currentUser?.id &&
+    (uploadedBy._id.toString?.() === currentUser.id.toString() ||
+      uploadedBy._id === currentUser.id)
+  );
 
   const startEdit = () => {
     setEditText(text);
@@ -61,6 +68,12 @@ const PostCard = memo(function PostCard({ post }: PostCardProps) {
     if (now - lastTap.current < 300) toggleLike(storePost._id);
     lastTap.current = now;
   };
+
+  // Don't render if essential data is missing
+  if (!uploadedBy) {
+    console.error("Post missing uploadedBy:", storePost);
+    return null;
+  }
 
   return (
     <>
@@ -95,6 +108,7 @@ const PostCard = memo(function PostCard({ post }: PostCardProps) {
           <div onClick={triggerDoubleTap}>
             <img
               src={image.url}
+              alt="Post"
               className="w-full max-h-96 object-cover border border-stone-800"
             />
           </div>

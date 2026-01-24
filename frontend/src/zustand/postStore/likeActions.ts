@@ -12,8 +12,8 @@ export const createLikeActions = (
     // Prevent double-clicking
     if (get().likingPosts.has(postId)) return;
 
-    // Get current user ID
-    const currentUserId = useAuthStore.getState().user?.user_id;
+    // Get current user ID - use 'id' field, not 'user_id'
+    const currentUserId = useAuthStore.getState().user?.id;
     if (!currentUserId) return;
 
     set((state) => ({

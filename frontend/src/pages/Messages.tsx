@@ -56,7 +56,7 @@ export default function Messages() {
   const [isMobile, setIsMobile] = useState(() =>
     typeof window !== "undefined"
       ? window.matchMedia("(max-width: 767.98px)").matches
-      : false
+      : false,
   );
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
@@ -92,7 +92,7 @@ export default function Messages() {
         const err = error as AxiosError<{ message: string }>;
         showToast(
           err.response?.data?.message || "Failed to load users",
-          "error"
+          "error",
         );
       }
     };
@@ -151,7 +151,7 @@ export default function Messages() {
       const err = error as AxiosError<{ message: string }>;
       showToast(
         err.response?.data?.message || "Failed to load messages",
-        "error"
+        "error",
       );
     } finally {
       setLoading(false);
@@ -173,7 +173,7 @@ export default function Messages() {
       const response = await sendMessageApi(
         selectedUser._id,
         newMessage.trim() || undefined,
-        imageFile || undefined
+        imageFile || undefined,
       );
 
       if (response.data.success) {
@@ -187,7 +187,7 @@ export default function Messages() {
       const err = error as AxiosError<{ message: string }>;
       showToast(
         err.response?.data?.message || "Failed to send message",
-        "error"
+        "error",
       );
     } finally {
       setSendingMessage(false);
@@ -206,7 +206,7 @@ export default function Messages() {
       const err = error as AxiosError<{ message: string }>;
       showToast(
         err.response?.data?.message || "Failed to delete message",
-        "error"
+        "error",
       );
     }
   };
@@ -267,7 +267,7 @@ export default function Messages() {
                   </div>
                 ) : (
                   messages.map((msg) => {
-                    const isYou = msg.sender._id === user?.user_id;
+                    const isYou = msg.sender._id === user?.id;
 
                     return (
                       <div

@@ -39,19 +39,39 @@ const getTrendingPosts = catchAsync(async (req, res, next) => {
     },
   ]);
 
-  // Add alreadyLiked field for each post
-  const postsWithLikeStatus = posts.map((post) => ({
-    ...post,
-    alreadyLiked: userId
-      ? post.likes?.some(
-          (id: Types.ObjectId) => id && id.toString() === userId,
-        ) || false
-      : false,
-    likes:
-      post.likes
-        ?.filter((id: Types.ObjectId) => id)
-        .map((id: Types.ObjectId) => id.toString()) || [],
-  }));
+  console.log(`📈 Fetched ${posts.length} trending posts for page ${page}`);
+
+  // Add alreadyLiked field for each post and ensure uploadedBy exists
+  const postsWithLikeStatus = posts
+    .filter((post) => {
+      if (!post.uploadedBy || !post.uploadedBy._id) {
+        console.warn("⚠️ Trending post missing uploadedBy:", post._id);
+        return false;
+      }
+      return true;
+    })
+    .map((post) => {
+      // Type assertion for aggregated uploadedBy
+      const uploadedBy = post.uploadedBy as any;
+
+      return {
+        ...post,
+        uploadedBy: {
+          _id: uploadedBy._id,
+          username: uploadedBy.username || "Unknown",
+          profilePicture: uploadedBy.profilePicture || null,
+        },
+        alreadyLiked: userId
+          ? post.likes?.some(
+              (id: Types.ObjectId) => id && id.toString() === userId,
+            ) || false
+          : false,
+        likes:
+          post.likes
+            ?.filter((id: Types.ObjectId) => id)
+            .map((id: Types.ObjectId) => id.toString()) || [],
+      };
+    });
 
   res.status(200).json({
     success: true,

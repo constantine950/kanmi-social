@@ -14,14 +14,32 @@ const getAllPosts = catchAsync(async (req, res, next) => {
     .populate("uploadedBy", "username profilePicture")
     .lean();
 
-  // Add alreadyLiked field for each post
-  const postsWithLikeStatus = posts.map((post) => ({
-    ...post,
-    alreadyLiked: userId
-      ? post.likes?.some((id) => id && id.toString() === userId) || false
-      : false,
-    likes: post.likes?.filter((id) => id).map((id) => id.toString()) || [],
-  }));
+  // Add alreadyLiked field for each post and ensure uploadedBy exists
+  const postsWithLikeStatus = posts
+    .filter((post) => {
+      if (!post.uploadedBy) {
+        console.warn("⚠️ Post missing uploadedBy:", post._id);
+        return false;
+      }
+      return true;
+    })
+    .map((post) => {
+      // Type assertion for populated uploadedBy
+      const uploadedBy = post.uploadedBy as any;
+
+      return {
+        ...post,
+        uploadedBy: {
+          _id: uploadedBy._id,
+          username: uploadedBy.username || "Unknown",
+          profilePicture: uploadedBy.profilePicture || null,
+        },
+        alreadyLiked: userId
+          ? post.likes?.some((id) => id && id.toString() === userId) || false
+          : false,
+        likes: post.likes?.filter((id) => id).map((id) => id.toString()) || [],
+      };
+    });
 
   res.status(200).json({
     success: true,
