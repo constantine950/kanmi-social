@@ -3,7 +3,9 @@ import { ArrowLeft } from "lucide-react";
 interface User {
   _id: string;
   username: string;
-  profilePicture?: string;
+  profilePicture: {
+    url: string;
+  };
 }
 
 interface MessageHeaderProp {
@@ -28,7 +30,7 @@ export default function MessageHeader({
         </button>
       )}
       <img
-        src={selectedUser.profilePicture || "/default-avatar.png"}
+        src={selectedUser.profilePicture.url || "/default-avatar.png"}
         alt={selectedUser.username}
         className="w-10 h-10 border border-stone-700 object-cover rounded-full"
       />

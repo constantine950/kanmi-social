@@ -1,7 +1,9 @@
 interface User {
   _id: string;
   username: string;
-  profilePicture?: string;
+  profilePicture: {
+    url: string;
+  };
 }
 
 interface UserListProp {
@@ -17,6 +19,7 @@ export default function UsersList({
   users,
   handleUserSelect,
 }: UserListProp) {
+  console.log(users);
   return (
     <div
       className={`
@@ -38,7 +41,7 @@ export default function UsersList({
             onClick={() => handleUserSelect(chatUser)}
           >
             <img
-              src={chatUser.profilePicture || "/default-avatar.png"}
+              src={chatUser.profilePicture.url || "/default-avatar.png"}
               alt={chatUser.username}
               className="w-10 h-10 border border-stone-700 object-cover rounded-full"
             />

@@ -3,7 +3,7 @@ import catchAsync from "../../utils/catchAsync.js";
 import { Types } from "mongoose";
 
 const getTrendingPosts = catchAsync(async (req, res, next) => {
-  const userId = req.userInfo?.user_id; // Get current user ID
+  const userId = req.userInfo?.user_id;
   const page = Number(req.query.page) || 1;
   const limit = Number(req.query.limit) || 5;
   const skip = (page - 1) * limit;
@@ -39,9 +39,6 @@ const getTrendingPosts = catchAsync(async (req, res, next) => {
     },
   ]);
 
-  console.log(`📈 Fetched ${posts.length} trending posts for page ${page}`);
-
-  // Add alreadyLiked field for each post and ensure uploadedBy exists
   const postsWithLikeStatus = posts
     .filter((post) => {
       if (!post.uploadedBy || !post.uploadedBy._id) {
@@ -51,7 +48,6 @@ const getTrendingPosts = catchAsync(async (req, res, next) => {
       return true;
     })
     .map((post) => {
-      // Type assertion for aggregated uploadedBy
       const uploadedBy = post.uploadedBy as any;
 
       return {

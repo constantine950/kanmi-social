@@ -13,19 +13,15 @@ const updatePost = catchAsync(async (req, res, next) => {
   const post = await Post.findById(postId);
   if (!post) return next(new AppError("Post not found", 404));
 
-  // VERIFY OWNERSHIP
   if (post.uploadedBy.toString() !== userId) {
     return next(new AppError("You can only edit your own posts", 403));
   }
 
-  // Update text if provided
   if (text !== undefined) {
     post.text = text;
   }
 
-  // Update image if provided
   if (req.file) {
-    // Delete old image from cloudinary if exists
     if (post.image?.publicId) {
       await cloudinary.uploader.destroy(post.image.publicId);
     }

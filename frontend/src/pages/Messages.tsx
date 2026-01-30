@@ -37,7 +37,9 @@ interface Message {
 interface User {
   _id: string;
   username: string;
-  profilePicture?: string;
+  profilePicture: {
+    url: string;
+  };
 }
 
 export default function Messages() {
