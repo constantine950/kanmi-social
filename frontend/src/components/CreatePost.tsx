@@ -40,7 +40,14 @@ export default function CreatePost() {
 
     const formData = new FormData();
     formData.append("text", text);
-    if (image) formData.append("postPicture", image);
+    // Changed from 'postPicture' to 'image' to match backend
+    if (image) formData.append("image", image);
+
+    console.log("📤 Creating post with:", {
+      text,
+      hasImage: !!image,
+      formDataEntries: Array.from(formData.entries()),
+    });
 
     try {
       await createPost(formData);
@@ -49,7 +56,7 @@ export default function CreatePost() {
       removeImage();
     } catch (error) {
       showToast("Failed to create post", "error");
-      console.error(error);
+      console.error("Create post error:", error);
     } finally {
       isSubmitting.current = false;
     }

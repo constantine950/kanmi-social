@@ -16,7 +16,7 @@ const refreshToken = catchAsync(async (req, res, next) => {
     }
 
     const payload = {
-      user_id: decoded.user_id,
+      id: decoded.user_id,
       username: decoded.username,
       profilePicture: decoded.profilePicture,
     };

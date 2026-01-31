@@ -16,12 +16,11 @@ export default function PostActions({
   likes,
   setIsModalOpen,
 }: PostActionsProp) {
-  const handleLikeClick = async () => {
-    try {
-      await toggleLike(storePost._id);
-    } catch (error) {
-      console.error("❌ Error in handleLikeClick:", error);
-    }
+  const handleLikeClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    toggleLike(storePost._id);
   };
 
   return (

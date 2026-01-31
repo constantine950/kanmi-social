@@ -14,8 +14,8 @@ const postRoutes = express.Router();
 postRoutes.post(
   "/create-post",
   authMiddleware,
-  upload.single("postPicture"),
-  createPost
+  upload.single("image"),
+  createPost,
 );
 postRoutes.get("/get-posts", authMiddleware, getAllPosts);
 postRoutes.get("/get-user-posts", authMiddleware, getPostsByUser);
@@ -23,8 +23,8 @@ postRoutes.delete("/delete-post/:id", authMiddleware, deletePost);
 postRoutes.patch(
   "/update-post/:id",
   authMiddleware,
-  upload.single("postPicture"),
-  updatePost
+  upload.single("image"),
+  updatePost,
 );
 postRoutes.patch("/:id/like", authMiddleware, togglePostLike);
 postRoutes.get("/trending", authMiddleware, getTrendingPosts);

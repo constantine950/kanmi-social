@@ -1,7 +1,7 @@
 import Post from "../../models/Post.js";
 import AppError from "../../utils/AppError.js";
 import catchAsync from "../../utils/catchAsync.js";
-import { v2 as cloudinary } from "cloudinary";
+import { uploadBufferToCloudinary } from "../../utils/cloudinaryHelper.js";
 
 const createPost = catchAsync(async (req, res, next) => {
   const userId = req.userInfo?.user_id;
@@ -14,11 +14,11 @@ const createPost = catchAsync(async (req, res, next) => {
 
   let imageData = null;
 
-  // Upload image to cloudinary if provided
   if (req.file) {
-    const result = await cloudinary.uploader.upload(req.file.path, {
-      folder: "kanmi_posts",
-    });
+    const result = await uploadBufferToCloudinary(req.file.buffer);
+    if (!result) {
+      return next(new AppError("Unable to upload to Cloudinary", 500));
+    }
 
     imageData = {
       url: result.secure_url,
@@ -39,10 +39,8 @@ const createPost = catchAsync(async (req, res, next) => {
     "username profilePicture",
   );
 
-  // Type assertion for populated uploadedBy
   const uploadedByUser = populatedPost.uploadedBy as any;
 
-  // Return post with proper structure
   res.status(201).json({
     success: true,
     message: "Post created successfully",

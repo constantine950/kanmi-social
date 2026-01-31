@@ -9,13 +9,19 @@ export const createLikeActions = (
   get: Parameters<StateCreator<PostStore>>[1],
 ) => ({
   toggleLike: async (postId: string) => {
-    // Prevent double-clicking
-    if (get().likingPosts.has(postId)) return;
+    // Prevent double-clicking with strict check
+    const likingPosts = get().likingPosts;
+    if (likingPosts.has(postId)) {
+      return;
+    }
 
     // Get current user ID - use 'id' field, not 'user_id'
     const currentUserId = useAuthStore.getState().user?.id;
-    if (!currentUserId) return;
+    if (!currentUserId) {
+      return;
+    }
 
+    // Immediately add to likingPosts to prevent duplicate calls
     set((state) => ({
       likingPosts: new Set(state.likingPosts).add(postId),
     }));
@@ -61,6 +67,7 @@ export const createLikeActions = (
     try {
       // Sync with server in background
       const response = await toggleLikeApi(postId);
+
       const { likes, alreadyLiked } = response;
 
       // Reconcile with server response
@@ -92,7 +99,7 @@ export const createLikeActions = (
         ),
       }));
     } catch (err) {
-      console.error("Failed to toggle like:", err);
+      console.error("❌ Failed to toggle like:", err);
 
       // ROLLBACK on error
       const rollback = (posts: Post[]) =>
@@ -131,11 +138,13 @@ export const createLikeActions = (
         ),
       }));
     } finally {
-      set((state) => {
-        const newLikingPosts = new Set(state.likingPosts);
-        newLikingPosts.delete(postId);
-        return { likingPosts: newLikingPosts };
-      });
+      setTimeout(() => {
+        set((state) => {
+          const newLikingPosts = new Set(state.likingPosts);
+          newLikingPosts.delete(postId);
+          return { likingPosts: newLikingPosts };
+        });
+      }, 100);
     }
   },
 });

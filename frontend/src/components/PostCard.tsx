@@ -35,7 +35,6 @@ const PostCard = memo(function PostCard({ post }: PostCardProps) {
     : [];
   const alreadyLiked = storePost.alreadyLiked ?? false;
 
-  // Fix: Use 'id' field instead of 'user_id'
   const isOwner = !!(
     uploadedBy?._id &&
     currentUser?.id &&
@@ -63,13 +62,20 @@ const PostCard = memo(function PostCard({ post }: PostCardProps) {
     setIsEditing(false);
   };
 
-  const triggerDoubleTap = () => {
+  const triggerDoubleTap = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
     const now = Date.now();
-    if (now - lastTap.current < 300) toggleLike(storePost._id);
+    const timeSinceLastTap = now - lastTap.current;
+
+    if (timeSinceLastTap < 300) {
+      toggleLike(storePost._id);
+    }
+
     lastTap.current = now;
   };
 
-  // Don't render if essential data is missing
   if (!uploadedBy) {
     console.error("Post missing uploadedBy:", storePost);
     return null;
@@ -105,11 +111,11 @@ const PostCard = memo(function PostCard({ post }: PostCardProps) {
 
         {/* IMAGE */}
         {image?.url && !isEditing && (
-          <div onClick={triggerDoubleTap}>
+          <div onClick={triggerDoubleTap} className="cursor-pointer">
             <img
               src={image.url}
               alt="Post"
-              className="w-full max-h-96 object-cover border border-stone-800"
+              className="w-full max-h-96 object-cover border border-stone-800 select-none"
             />
           </div>
         )}
